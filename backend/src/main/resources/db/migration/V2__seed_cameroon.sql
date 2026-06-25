@@ -40,7 +40,7 @@ INSERT INTO school (name, category, description, city, region, address, latitude
      NULL, NULL, NULL, NULL),
 
     ('Yaoundé International Business School (YIBS)', 'UNIVERSITY',
-     'Private business school in Yaoundé offering programmes in management, finance, marketing and entrepreneurship.',
+     'Affiliated with the University of Bamenda (UBa). Offers HND, Bachelor (BTech) and Master programmes across business & finance, management, communication, tourism & hotel management and computer engineering. Day & evening sessions.',
      'Yaoundé', 'Centre', 'Bastos, Yaoundé', 3.8950, 11.5180, 850000, 'XAF',
      NULL, NULL, NULL, NULL),
 
@@ -71,9 +71,13 @@ SELECT id, 'MBA', 'Master', 24, 1200000 FROM school WHERE name = 'The ICT Univer
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Banking & Finance', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'BBA Business Administration', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+SELECT id, 'HND Accounting', 'Diploma', 24, 400000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'BSc Accounting & Finance', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+SELECT id, 'BTech Banking & Finance', 'Bachelor', 36, 550000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BTech Software Engineering', 'Bachelor', 36, 600000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'MBA Business Administration', 'Master', 24, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'HND Software Engineering', 'Diploma', 24, 600000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)

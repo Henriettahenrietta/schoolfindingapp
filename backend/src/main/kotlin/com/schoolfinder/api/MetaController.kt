@@ -12,6 +12,8 @@ class MetaController(private val props: AppProperties) {
 
     @GetMapping
     fun meta() = MetaResponse(
+        appName = "UniMatch Cameroon",
+        tagline = "Find Your Future University",
         country = props.region.country,
         currency = props.region.currency,
         mapCenterLat = props.region.mapCenterLat,

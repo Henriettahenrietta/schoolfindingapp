@@ -140,7 +140,7 @@ const server = http.createServer(async (req, res) => {
 
   // Meta
   if (path === '/api/v1/meta' && method === 'GET') {
-    return send(res, 200, { country: 'Cameroon', currency: 'XAF', mapCenterLat: 4.0511, mapCenterLng: 9.7679, categories: ['PRIMARY', 'SECONDARY', 'HIGH_SCHOOL', 'VOCATIONAL', 'UNIVERSITY'], firebaseEnabled: false });
+    return send(res, 200, { appName: 'UniMatch Cameroon', tagline: 'Find Your Future University', country: 'Cameroon', currency: 'XAF', mapCenterLat: 4.0511, mapCenterLng: 9.7679, categories: ['PRIMARY', 'SECONDARY', 'HIGH_SCHOOL', 'VOCATIONAL', 'UNIVERSITY'], firebaseEnabled: false });
   }
 
   // Compare (must precede /schools/:id)

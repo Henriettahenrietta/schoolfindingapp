@@ -144,6 +144,8 @@ data class CompareResponse(
 )
 
 data class MetaResponse(
+    val appName: String,
+    val tagline: String,
     val country: String,
     val currency: String,
     val mapCenterLat: Double,

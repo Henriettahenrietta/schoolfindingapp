@@ -51,9 +51,9 @@ fun LoginScreen(onLoggedIn: (Session) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("School Finder", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text("UniMatch Cameroon", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text(
-            "Discover, compare and review schools in Cameroon",
+            "Find Your Future University",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

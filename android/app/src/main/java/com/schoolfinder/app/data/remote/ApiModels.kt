@@ -3,6 +3,8 @@ package com.schoolfinder.app.data.remote
 // Parsed reflectively by Moshi (KotlinJsonAdapterFactory) — no codegen needed.
 
 data class Meta(
+    val appName: String,
+    val tagline: String,
     val country: String,
     val currency: String,
     val mapCenterLat: Double,

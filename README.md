@@ -1,7 +1,11 @@
-# School Finder
+# UniMatch Cameroon
 
-A smart educational-institution discovery system: search, compare, evaluate, and navigate to
-schools and universities. Built from the project SRS (`Saturated_School_Finder_SRS_Final_Corrected.pdf`).
+**Find Your Future University** — a smart educational-institution discovery system: search, compare,
+evaluate, and navigate to schools and universities. Built from the project SRS
+(`Saturated_School_Finder_SRS_Final_Corrected.pdf`).
+
+> Note: the display/brand name is **UniMatch Cameroon**; the internal code package/namespace
+> remains `com.schoolfinder` to avoid a disruptive rename.
 
 This is a **monorepo**:
 

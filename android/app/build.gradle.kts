@@ -14,9 +14,11 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Backend base URL. 10.0.2.2 is the Android emulator's alias for the host machine.
-        // Override per build type or with a real server as needed.
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        // Backend base URL baked into the APK.
+        // Render deployment (render.yaml service "schoolfinder-api"). If Render assigns a
+        // different hostname, update this and push to rebuild. For the emulator use
+        // "http://10.0.2.2:8080/"; for same-WiFi testing use "http://<your-pc-ip>:8080/".
+        buildConfigField("String", "API_BASE_URL", "\"https://schoolfinder-api.onrender.com/\"")
     }
 
     buildTypes {

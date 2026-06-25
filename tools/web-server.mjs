@@ -26,7 +26,10 @@ const server = http.createServer(async (req, res) => {
     const filePath = path.join(ROOT, rel);
     if (!filePath.startsWith(ROOT)) { res.writeHead(403); return res.end('Forbidden'); }
     const data = await readFile(filePath);
-    res.writeHead(200, { 'Content-Type': TYPES[path.extname(filePath)] || 'application/octet-stream' });
+    res.writeHead(200, {
+      'Content-Type': TYPES[path.extname(filePath)] || 'application/octet-stream',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    });
     res.end(data);
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain' });

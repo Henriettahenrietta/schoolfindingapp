@@ -25,7 +25,9 @@ const FIELDS = [
   { key: 'university',    label: 'University',             c: ['#0d6e6e', '#09504f'], emoji: '🎓' },
 ];
 
-const svg = (f) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="${f.label}">
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const svg = (f) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="${esc(f.label)}">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="${f.c[0]}"/>
@@ -55,7 +57,7 @@ const svg = (f) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="
   <!-- field icon -->
   <text x="320" y="172" font-size="104" text-anchor="middle" dominant-baseline="central">${f.emoji}</text>
   <!-- field label -->
-  <text x="320" y="318" font-size="30" font-family="Segoe UI, Roboto, Arial, sans-serif" font-weight="700" text-anchor="middle" fill="#ffffff">${f.label}</text>
+  <text x="320" y="318" font-size="30" font-family="Segoe UI, Roboto, Arial, sans-serif" font-weight="700" text-anchor="middle" fill="#ffffff">${esc(f.label)}</text>
 </svg>
 `;
 

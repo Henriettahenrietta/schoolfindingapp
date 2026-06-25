@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Finder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🎓</span>
+      <div>
+        <h1>School Finder</h1>
+        <p class="tag">Discover schools &amp; universities in Cameroon</p>
+      </div>
+    </div>
+    <div class="identity" id="identity"><!-- filled by JS --></div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-view="discover">Discover</button>
+    <button class="tab" data-view="compare">Compare <span id="compareCount" class="pill">0</span></button>
+    <button class="tab" data-view="favorites">Favourites</button>
+  </nav>
+
+  <main>
+    <!-- Discover -->
+    <section id="view-discover" class="view active">
+      <form id="searchForm" class="filters">
+        <input type="search" id="q" placeholder="Search by name…" />
+        <select id="category">
+          <option value="">All categories</option>
+          <option value="UNIVERSITY">University</option>
+          <option value="HIGH_SCHOOL">High school</option>
+          <option value="SECONDARY">Secondary</option>
+          <option value="VOCATIONAL">Vocational</option>
+          <option value="PRIMARY">Primary</option>
+        </select>
+        <input type="text" id="city" placeholder="City (e.g. Buea)" />
+        <select id="sort">
+          <option value="name">Sort: Name</option>
+          <option value="tuition">Sort: Tuition (low→high)</option>
+          <option value="newest">Sort: Newest</option>
+        </select>
+        <button type="submit">Search</button>
+      </form>
+      <p id="resultMeta" class="muted"></p>
+      <div id="results" class="grid"></div>
+    </section>
+
+    <!-- Compare -->
+    <section id="view-compare" class="view">
+      <h2>Compare schools</h2>
+      <p class="muted">Tick “Compare” on 2–4 schools in Discover, then come back here.</p>
+      <div id="compareResult"></div>
+    </section>
+
+    <!-- Favourites -->
+    <section id="view-favorites" class="view">
+      <h2>Favourites</h2>
+      <p class="muted" id="favHint"></p>
+      <div id="favorites" class="grid"></div>
+    </section>
+  </main>
+
+  <!-- Detail modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="close" id="modalClose">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -22,6 +22,7 @@ const schools = [
   { id: 5, name: 'The ICT University', category: 'UNIVERSITY', description: 'Private university focused on information and communication technology and business.', city: 'Yaoundé', region: 'Centre', address: 'Messassi, Yaoundé', latitude: 3.9180, longitude: 11.5360, tuitionFee: 750000, currency: 'XAF', website: 'https://ictuniversity.org', phone: null, email: null, coverImageUrl: null },
   { id: 6, name: 'PKFokam Institute of Excellence', category: 'UNIVERSITY', description: 'Private institution of higher education in Yaoundé offering computing, business, banking and finance.', city: 'Yaoundé', region: 'Centre', address: 'Santa Barbara, Yaoundé', latitude: 3.8400, longitude: 11.5300, tuitionFee: 700000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
   { id: 7, name: 'Yaoundé International Business School (YIBS)', category: 'UNIVERSITY', description: 'Private business school in Yaoundé offering programmes in management, finance, marketing and entrepreneurship.', city: 'Yaoundé', region: 'Centre', address: 'Bastos, Yaoundé', latitude: 3.8950, longitude: 11.5180, tuitionFee: 850000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
+  { id: 8, name: 'CITEC Higher Institute of Technology (CITEC)', category: 'UNIVERSITY', description: 'Private higher institute in Yaoundé offering programmes in information technology, networking, software engineering and business management.', city: 'Yaoundé', region: 'Centre', address: 'Nsam, Yaoundé', latitude: 3.8350, longitude: 11.5160, tuitionFee: 600000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
 ];
 
 const programs = [
@@ -37,6 +38,8 @@ const programs = [
   { id: 10, schoolId: 6, name: 'BSc Banking & Finance', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
   { id: 11, schoolId: 7, name: 'BBA Business Administration', level: 'Bachelor', durationMonths: 36, tuitionFee: 850000 },
   { id: 12, schoolId: 7, name: 'BSc Accounting & Finance', level: 'Bachelor', durationMonths: 36, tuitionFee: 850000 },
+  { id: 13, schoolId: 8, name: 'HND Software Engineering', level: 'Diploma', durationMonths: 24, tuitionFee: 600000 },
+  { id: 14, schoolId: 8, name: 'BSc Network & Security', level: 'Bachelor', durationMonths: 36, tuitionFee: 650000 },
 ];
 
 const users = [

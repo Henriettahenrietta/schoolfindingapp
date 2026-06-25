@@ -42,6 +42,11 @@ INSERT INTO school (name, category, description, city, region, address, latitude
     ('Yaoundé International Business School (YIBS)', 'UNIVERSITY',
      'Private business school in Yaoundé offering programmes in management, finance, marketing and entrepreneurship.',
      'Yaoundé', 'Centre', 'Bastos, Yaoundé', 3.8950, 11.5180, 850000, 'XAF',
+     NULL, NULL, NULL, NULL),
+
+    ('CITEC Higher Institute of Technology (CITEC)', 'UNIVERSITY',
+     'Private higher institute in Yaoundé offering programmes in information technology, networking, software engineering and business management.',
+     'Yaoundé', 'Centre', 'Nsam, Yaoundé', 3.8350, 11.5160, 600000, 'XAF',
      NULL, NULL, NULL, NULL);
 
 -- Programs (linked by university name)
@@ -69,6 +74,10 @@ INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BBA Business Administration', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Accounting & Finance', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Software Engineering', 'Diploma', 24, 600000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BSc Network & Security', 'Bachelor', 36, 650000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
 
 -- A few approved reviews so ratings are populated
 INSERT INTO review (school_id, user_id, rating, comment, status)

@@ -9,8 +9,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.schoolfinder.app.data.remote.Program
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -160,30 +175,12 @@ fun DetailScreen(schoolId: Long, onBack: () -> Unit) {
                     }
 
                     if (s.programs.isNotEmpty()) {
-                        SectionTitle("Programmes by School")
-                        s.programs.groupBy { it.faculty ?: "Programmes" }.forEach { (faculty, progs) ->
-                            Spacer(Modifier.height(10.dp))
-                            Text(
-                                faculty,
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            progs.forEach { p ->
-                                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                                    Column(Modifier.padding(12.dp)) {
-                                        Text(p.name, fontWeight = FontWeight.SemiBold)
-                                        Text(
-                                            listOfNotNull(
-                                                p.level,
-                                                p.durationMonths?.let { "$it months" },
-                                                p.tuitionFee?.let { formatMoney(it, s.currency) },
-                                            ).joinToString(" • "),
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                    }
-                                }
-                            }
+                        SectionTitle("Programmes")
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(vertical = 4.dp),
+                        ) {
+                            items(s.programs) { p -> ProgramSlide(p, s.currency) }
                         }
                     }
 
@@ -216,6 +213,70 @@ private fun SectionTitle(text: String) {
     Spacer(Modifier.height(20.dp))
     Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     Spacer(Modifier.height(8.dp))
+}
+
+private data class Field(val kw: String, val icon: String, val color: Color)
+
+/** Topical image keyword, icon and colour for a programme, based on its field. */
+private fun fieldOf(text: String): Field {
+    val t = text.lowercase()
+    return when {
+        Regex("software|comput|network|cloud|database|cyber|web|e-?commerce|digital|systems|graphics|information tech").containsMatchIn(t) -> Field("computer,technology", "💻", Color(0xFF0D6E6E))
+        Regex("nurs|midwif|medical|pharmac|health|physio|medicine|biomed|laborator").containsMatchIn(t) -> Field("medical,hospital", "🩺", Color(0xFFC0392B))
+        Regex("law|magistr|legal").containsMatchIn(t) -> Field("law,courthouse", "⚖️", Color(0xFF34495E))
+        Regex("account|bank|financ|econom|market|business|management|administration|bba|mba|commerce|logistic|transport|shipping|project|human resource").containsMatchIn(t) -> Field("business,office", "📊", Color(0xFF1F6F8B))
+        Regex("engineer|civil|electric|telecom|mechanic").containsMatchIn(t) -> Field("engineering,construction", "🛠️", Color(0xFFE67E22))
+        Regex("journal|communicat|advertis|public relation|media").containsMatchIn(t) -> Field("journalism,microphone", "🎙️", Color(0xFF8E44AD))
+        Regex("tourism|hotel|travel|catering|hospitality").containsMatchIn(t) -> Field("hotel,tourism", "🏨", Color(0xFF16A085))
+        Regex("bakery|food").containsMatchIn(t) -> Field("bakery,food", "🍞", Color(0xFFD35400))
+        Regex("beauty|cosmetic|esthetic|hairdress").containsMatchIn(t) -> Field("beauty,salon", "💄", Color(0xFFD81B60))
+        Regex("fashion|clothing|design").containsMatchIn(t) -> Field("fashion,tailor", "👗", Color(0xFF6D4C41))
+        Regex("theolog|religio").containsMatchIn(t) -> Field("church", "⛪", Color(0xFF5D4037))
+        Regex("statistic|demograph|mathematic|physic|data|science").containsMatchIn(t) -> Field("science,laboratory", "🔬", Color(0xFF2980B9))
+        Regex("english|letters|arts|language").containsMatchIn(t) -> Field("books,library", "📚", Color(0xFF7F8C8D))
+        Regex("political|international relation|public administr|customs|treasury|governance").containsMatchIn(t) -> Field("government,parliament", "🏛️", Color(0xFF596275))
+        else -> Field("university,campus", "🎓", Color(0xFF0D6E6E))
+    }
+}
+
+@Composable
+private fun ProgramSlide(p: Program, currency: String) {
+    val f = fieldOf(p.name + " " + (p.faculty ?: ""))
+    Card(modifier = Modifier.width(240.dp)) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(130.dp)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(f.color),
+                contentAlignment = Alignment.Center,
+            ) {
+                // Icon shows immediately; the topical photo loads over it (or stays hidden on failure).
+                Text(f.icon, fontSize = 40.sp)
+                AsyncImage(
+                    model = "https://loremflickr.com/640/360/${f.kw}?lock=${p.id}",
+                    contentDescription = p.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+            Column(Modifier.padding(12.dp)) {
+                p.faculty?.let {
+                    Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                }
+                Text(p.name, fontWeight = FontWeight.SemiBold)
+                Text(
+                    listOfNotNull(
+                        p.level,
+                        p.durationMonths?.let { "$it months" },
+                        p.tuitionFee?.let { formatMoney(it, currency) },
+                    ).joinToString(" • "),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
 }
 
 @Composable

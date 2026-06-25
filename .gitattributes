@@ -2,3 +2,6 @@
 *.sh text eol=lf
 # Gradle wrapper script (if added later) also needs LF.
 gradlew text eol=lf
+# Binary artifacts must never be EOL-converted.
+*.jar binary
+*.pdf binary

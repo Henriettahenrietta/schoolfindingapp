@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,10 +20,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.schoolfinder.app.data.remote.Program
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -215,27 +213,27 @@ private fun SectionTitle(text: String) {
     Spacer(Modifier.height(8.dp))
 }
 
-private data class Field(val kw: String, val icon: String, val color: Color)
+private data class Field(val icon: String, val colors: List<Color>)
 
-/** Topical image keyword, icon and colour for a programme, based on its field. */
+/** Icon and Cameroon-themed gradient for a programme, drawn locally (no network images). */
 private fun fieldOf(text: String): Field {
     val t = text.lowercase()
     return when {
-        Regex("software|comput|network|cloud|database|cyber|web|e-?commerce|digital|systems|graphics|information tech").containsMatchIn(t) -> Field("computer,technology", "💻", Color(0xFF0D6E6E))
-        Regex("nurs|midwif|medical|pharmac|health|physio|medicine|biomed|laborator").containsMatchIn(t) -> Field("medical,hospital", "🩺", Color(0xFFC0392B))
-        Regex("law|magistr|legal").containsMatchIn(t) -> Field("law,courthouse", "⚖️", Color(0xFF34495E))
-        Regex("account|bank|financ|econom|market|business|management|administration|bba|mba|commerce|logistic|transport|shipping|project|human resource").containsMatchIn(t) -> Field("business,office", "📊", Color(0xFF1F6F8B))
-        Regex("engineer|civil|electric|telecom|mechanic").containsMatchIn(t) -> Field("engineering,construction", "🛠️", Color(0xFFE67E22))
-        Regex("journal|communicat|advertis|public relation|media").containsMatchIn(t) -> Field("journalism,microphone", "🎙️", Color(0xFF8E44AD))
-        Regex("tourism|hotel|travel|catering|hospitality").containsMatchIn(t) -> Field("hotel,tourism", "🏨", Color(0xFF16A085))
-        Regex("bakery|food").containsMatchIn(t) -> Field("bakery,food", "🍞", Color(0xFFD35400))
-        Regex("beauty|cosmetic|esthetic|hairdress").containsMatchIn(t) -> Field("beauty,salon", "💄", Color(0xFFD81B60))
-        Regex("fashion|clothing|design").containsMatchIn(t) -> Field("fashion,tailor", "👗", Color(0xFF6D4C41))
-        Regex("theolog|religio").containsMatchIn(t) -> Field("church", "⛪", Color(0xFF5D4037))
-        Regex("statistic|demograph|mathematic|physic|data|science").containsMatchIn(t) -> Field("science,laboratory", "🔬", Color(0xFF2980B9))
-        Regex("english|letters|arts|language").containsMatchIn(t) -> Field("books,library", "📚", Color(0xFF7F8C8D))
-        Regex("political|international relation|public administr|customs|treasury|governance").containsMatchIn(t) -> Field("government,parliament", "🏛️", Color(0xFF596275))
-        else -> Field("university,campus", "🎓", Color(0xFF0D6E6E))
+        Regex("software|comput|network|cloud|database|cyber|web|e-?commerce|digital|systems|graphics|information tech").containsMatchIn(t) -> Field("💻", listOf(Color(0xFF0D6E6E), Color(0xFF09504F)))
+        Regex("nurs|midwif|medical|pharmac|health|physio|medicine|biomed|laborator").containsMatchIn(t) -> Field("🩺", listOf(Color(0xFFC0392B), Color(0xFF7B241C)))
+        Regex("law|magistr|legal").containsMatchIn(t) -> Field("⚖️", listOf(Color(0xFF34495E), Color(0xFF2C3E50)))
+        Regex("account|bank|financ|econom|market|business|management|administration|bba|mba|commerce|logistic|transport|shipping|project|human resource").containsMatchIn(t) -> Field("📊", listOf(Color(0xFF1F6F8B), Color(0xFF16505F)))
+        Regex("engineer|civil|electric|telecom|mechanic").containsMatchIn(t) -> Field("🛠️", listOf(Color(0xFFE67E22), Color(0xFFA85B11)))
+        Regex("journal|communicat|advertis|public relation|media").containsMatchIn(t) -> Field("🎙️", listOf(Color(0xFF8E44AD), Color(0xFF5E2D73)))
+        Regex("tourism|hotel|travel|catering|hospitality").containsMatchIn(t) -> Field("🏨", listOf(Color(0xFF16A085), Color(0xFF0E6655)))
+        Regex("bakery|food").containsMatchIn(t) -> Field("🍞", listOf(Color(0xFFD35400), Color(0xFFA04000)))
+        Regex("beauty|cosmetic|esthetic|hairdress").containsMatchIn(t) -> Field("💄", listOf(Color(0xFFD81B60), Color(0xFF880E4F)))
+        Regex("fashion|clothing|design").containsMatchIn(t) -> Field("👗", listOf(Color(0xFF6D4C41), Color(0xFF4E342E)))
+        Regex("theolog|religio").containsMatchIn(t) -> Field("⛪", listOf(Color(0xFF5D4037), Color(0xFF3E2723)))
+        Regex("statistic|demograph|mathematic|physic|data|science").containsMatchIn(t) -> Field("🔬", listOf(Color(0xFF2980B9), Color(0xFF1C5980)))
+        Regex("english|letters|arts|language").containsMatchIn(t) -> Field("📚", listOf(Color(0xFF7F8C8D), Color(0xFF5D6D6E)))
+        Regex("political|international relation|public administr|customs|treasury|governance").containsMatchIn(t) -> Field("🏛️", listOf(Color(0xFF596275), Color(0xFF3D4453)))
+        else -> Field("🎓", listOf(Color(0xFF0D6E6E), Color(0xFF09504F)))
     }
 }
 
@@ -249,17 +247,10 @@ private fun ProgramSlide(p: Program, currency: String) {
                     .fillMaxWidth()
                     .height(130.dp)
                     .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    .background(f.color),
+                    .background(Brush.linearGradient(f.colors)),
                 contentAlignment = Alignment.Center,
             ) {
-                // Icon shows immediately; the topical photo loads over it (or stays hidden on failure).
-                Text(f.icon, fontSize = 40.sp)
-                AsyncImage(
-                    model = "https://loremflickr.com/640/360/${f.kw}?lock=${p.id}",
-                    contentDescription = p.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
+                Text(f.icon, fontSize = 56.sp)
             }
             Column(Modifier.padding(12.dp)) {
                 p.faculty?.let {

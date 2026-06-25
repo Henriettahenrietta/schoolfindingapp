@@ -13,5 +13,7 @@ RUN gradle --no-daemon clean bootJar
 FROM eclipse-temurin:21-jre AS run
 WORKDIR /app
 COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]

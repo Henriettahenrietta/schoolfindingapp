@@ -1,0 +1,4 @@
+# Shell scripts must use LF so they run inside Linux containers.
+*.sh text eol=lf
+# Gradle wrapper script (if added later) also needs LF.
+gradlew text eol=lf

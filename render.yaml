@@ -1,0 +1,30 @@
+# Render.com blueprint — deploys the School Finder backend + a PostgreSQL database.
+# Deploy: sign in to https://render.com with the GitHub account that owns this repo,
+# then New ▸ Blueprint ▸ pick this repo. Render builds backend/Dockerfile on its own
+# infrastructure (fast network) and gives you a live https URL.
+databases:
+  - name: schoolfinder-db
+    databaseName: schoolfinder
+    user: schoolfinder
+    plan: free
+
+services:
+  - type: web
+    name: schoolfinder-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: schoolfinder-db
+          property: connectionString
+      # External services run in placeholder/dev mode until you add real keys.
+      - key: FIREBASE_ENABLED
+        value: "false"
+      - key: CLOUDINARY_URL
+        value: ""
+      - key: GOOGLE_MAPS_API_KEY
+        value: ""

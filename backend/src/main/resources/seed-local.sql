@@ -13,7 +13,8 @@ INSERT INTO school (name, category, description, city, region, address, latitude
     ('Catholic University of Central Africa (UCAC)', 'UNIVERSITY', 'Private Catholic university renowned for management, law, social sciences and health.', 'Yaoundé', 'Centre', 'Nkolbisson, Yaoundé', 3.8730, 11.4380, 900000, 'XAF', 'https://www.ucac-icy.net', NULL, NULL, NULL, TRUE, CURRENT_TIMESTAMP),
     ('Protestant University of Central Africa (UPAC)', 'UNIVERSITY', 'Private university founded by Protestant churches, with faculties in theology, health sciences and management.', 'Yaoundé', 'Centre', 'Djoungolo, Yaoundé', 3.8900, 11.5210, 800000, 'XAF', NULL, NULL, NULL, NULL, TRUE, CURRENT_TIMESTAMP),
     ('The ICT University', 'UNIVERSITY', 'Private university focused on information and communication technology and business.', 'Yaoundé', 'Centre', 'Messassi, Yaoundé', 3.9180, 11.5360, 750000, 'XAF', 'https://ictuniversity.org', NULL, NULL, NULL, TRUE, CURRENT_TIMESTAMP),
-    ('PKFokam Institute of Excellence', 'UNIVERSITY', 'Private institution of higher education in Yaoundé offering computing, business, banking and finance.', 'Yaoundé', 'Centre', 'Santa Barbara, Yaoundé', 3.8400, 11.5300, 700000, 'XAF', NULL, NULL, NULL, NULL, TRUE, CURRENT_TIMESTAMP);
+    ('PKFokam Institute of Excellence', 'UNIVERSITY', 'Private institution of higher education in Yaoundé offering computing, business, banking and finance.', 'Yaoundé', 'Centre', 'Santa Barbara, Yaoundé', 3.8400, 11.5300, 700000, 'XAF', NULL, NULL, NULL, NULL, TRUE, CURRENT_TIMESTAMP),
+    ('Yaoundé International Business School (YIBS)', 'UNIVERSITY', 'Private business school in Yaoundé offering programmes in management, finance, marketing and entrepreneurship.', 'Yaoundé', 'Centre', 'Bastos, Yaoundé', 3.8950, 11.5180, 850000, 'XAF', NULL, NULL, NULL, NULL, TRUE, CURRENT_TIMESTAMP);
 
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Computer Science', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé I';
@@ -35,6 +36,10 @@ INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'MBA', 'Master', 24, 1200000 FROM school WHERE name = 'The ICT University';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Banking & Finance', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BBA Business Administration', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BSc Accounting & Finance', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 
 INSERT INTO review (school_id, user_id, rating, comment, status, created_at)
 SELECT s.id, u.id, 5, 'Great campus and supportive lecturers.', 'APPROVED', CURRENT_TIMESTAMP

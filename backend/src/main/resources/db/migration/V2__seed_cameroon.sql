@@ -37,6 +37,11 @@ INSERT INTO school (name, category, description, city, region, address, latitude
     ('PKFokam Institute of Excellence', 'UNIVERSITY',
      'Private institution of higher education in Yaoundé offering computing, business, banking and finance.',
      'Yaoundé', 'Centre', 'Santa Barbara, Yaoundé', 3.8400, 11.5300, 700000, 'XAF',
+     NULL, NULL, NULL, NULL),
+
+    ('Yaoundé International Business School (YIBS)', 'UNIVERSITY',
+     'Private business school in Yaoundé offering programmes in management, finance, marketing and entrepreneurship.',
+     'Yaoundé', 'Centre', 'Bastos, Yaoundé', 3.8950, 11.5180, 850000, 'XAF',
      NULL, NULL, NULL, NULL);
 
 -- Programs (linked by university name)
@@ -60,6 +65,10 @@ INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'MBA', 'Master', 24, 1200000 FROM school WHERE name = 'The ICT University';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Banking & Finance', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BBA Business Administration', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BSc Accounting & Finance', 'Bachelor', 36, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 
 -- A few approved reviews so ratings are populated
 INSERT INTO review (school_id, user_id, rating, comment, status)

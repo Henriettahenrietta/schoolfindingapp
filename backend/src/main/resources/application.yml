@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: school-finder-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/schoolfinder}
+    username: ${SPRING_DATASOURCE_USERNAME:schoolfinder}
+    password: ${SPRING_DATASOURCE_PASSWORD:schoolfinder}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+app:
+  region:
+    country: Cameroon
+    currency: XAF
+    map-center-lat: 4.0511     # Douala
+    map-center-lng: 9.7679
+  firebase:
+    # When false, the API runs in dev mode: an X-Debug-Uid header identifies the user,
+    # so the whole stack works without real Firebase credentials.
+    enabled: ${FIREBASE_ENABLED:false}
+    credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+  cloudinary:
+    url: ${CLOUDINARY_URL:}
+  google-maps:
+    api-key: ${GOOGLE_MAPS_API_KEY:}
+
+logging:
+  level:
+    org.springframework.security: INFO

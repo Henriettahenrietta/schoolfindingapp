@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: schoolfinder
+      POSTGRES_USER: schoolfinder
+      POSTGRES_PASSWORD: schoolfinder
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schoolfinder -d schoolfinder"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/schoolfinder
+      SPRING_DATASOURCE_USERNAME: schoolfinder
+      SPRING_DATASOURCE_PASSWORD: schoolfinder
+      # External services — placeholders. Leave blank to use local-dev fallbacks.
+      FIREBASE_ENABLED: "false"
+      FIREBASE_CREDENTIALS_PATH: ""
+      CLOUDINARY_URL: ""
+      GOOGLE_MAPS_API_KEY: ""
+    ports:
+      - "8080:8080"
+
+volumes:
+  dbdata:

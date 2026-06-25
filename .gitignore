@@ -1,0 +1,23 @@
+# Build outputs
+backend/build/
+backend/.gradle/
+android/build/
+android/app/build/
+android/.gradle/
+**/*.iml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Local config / secrets
+*.local
+.env
+backend/src/main/resources/firebase-service-account.json
+android/app/google-services.json
+android/local.properties
+
+# OS
+.DS_Store
+Thumbs.db

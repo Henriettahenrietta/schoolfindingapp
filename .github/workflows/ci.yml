@@ -28,6 +28,23 @@ jobs:
         working-directory: backend
         run: gradle --no-daemon clean build
 
+      - name: Smoke test (local H2 profile)
+        working-directory: backend
+        run: |
+          JAR=$(ls build/libs/*.jar | grep -v plain | head -n1)
+          echo "Booting $JAR with the local profile..."
+          java -jar "$JAR" --spring.profiles.active=local &
+          APP_PID=$!
+          UP=0
+          for i in $(seq 1 40); do
+            if curl -sf http://localhost:8080/actuator/health > /dev/null; then UP=1; break; fi
+            sleep 3
+          done
+          if [ "$UP" != "1" ]; then echo "App failed to start"; kill $APP_PID 2>/dev/null; exit 1; fi
+          echo "Health:"; curl -s http://localhost:8080/actuator/health; echo
+          echo "Schools (first 500 chars):"; curl -s http://localhost:8080/api/v1/schools | head -c 500; echo
+          kill $APP_PID 2>/dev/null
+
       - name: Upload backend jar
         uses: actions/upload-artifact@v4
         with:

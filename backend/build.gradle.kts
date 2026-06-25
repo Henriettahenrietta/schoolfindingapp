@@ -35,9 +35,11 @@ dependencies {
     // Firebase Admin (token verification). Optional at runtime via FIREBASE_ENABLED.
     implementation("com.google.firebase:firebase-admin:9.3.0")
 
+    // H2 powers the lightweight `local` profile (in-memory DB, no PostgreSQL needed).
+    runtimeOnly("com.h2database:h2")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testRuntimeOnly("com.h2database:h2")
 }
 
 kotlin {

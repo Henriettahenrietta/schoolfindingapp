@@ -16,13 +16,31 @@ data on first boot.
 > Requires a working Docker engine. On Windows this needs Docker Desktop with WSL2 / "Virtual Machine
 > Platform" enabled and hardware virtualization turned on in the BIOS.
 
-## Run without Docker
+## Run locally without Docker
+
+### Lightest option — in-memory H2 (only a JDK 21 needed, no PostgreSQL)
+
+```bash
+cd backend
+gradle bootRun --args='--spring.profiles.active=local'
+```
+
+This starts the API on http://localhost:8080 with an in-memory H2 database, the schema built from
+the entities, and the same Cameroon sample data. Nothing else to install. Browse the data at
+http://localhost:8080/h2-console (JDBC URL `jdbc:h2:mem:schoolfinder`, user `sa`, empty password).
+Data resets on restart.
+
+> No Gradle installed? Once the wrapper jar exists use `./gradlew`; otherwise install Gradle 8.9, or
+> run `gradle wrapper` once. The first build downloads dependencies — slow on a poor connection, then
+> cached.
+
+### With PostgreSQL
 
 Needs JDK 21 and a running PostgreSQL with a `schoolfinder` database (user/password `schoolfinder`).
 
 ```bash
 cd backend
-gradle bootRun        # or ./gradlew bootRun once the wrapper is generated
+gradle bootRun
 ```
 
 Override DB settings via `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`,

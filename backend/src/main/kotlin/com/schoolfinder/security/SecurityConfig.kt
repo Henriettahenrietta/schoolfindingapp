@@ -27,6 +27,8 @@ class SecurityConfig(private val firebaseTokenFilter: FirebaseTokenFilter) {
                     .requestMatchers(HttpMethod.GET, "/api/v1/schools/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/meta/**").permitAll()
                     .requestMatchers("/actuator/health", "/error").permitAll()
+                    // H2 console — only registered under the `local` profile (dev only)
+                    .requestMatchers("/h2-console/**").permitAll()
                     // Admin surface
                     .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                     // Everything else needs an authenticated student
@@ -35,6 +37,8 @@ class SecurityConfig(private val firebaseTokenFilter: FirebaseTokenFilter) {
             .addFilterBefore(firebaseTokenFilter, UsernamePasswordAuthenticationFilter::class.java)
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
+            // Allow the H2 console (local profile) to render in a frame
+            .headers { headers -> headers.frameOptions { it.sameOrigin() } }
 
         return http.build()
     }

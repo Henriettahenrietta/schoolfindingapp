@@ -176,23 +176,23 @@ function clearCompare() { compareIds = []; saveCompare(); loadCompare(); if (cur
 function progField(text) {
   const t = (text || '').toLowerCase();
   const map = [
-    [/(software|comput|\bit\b|information tech|network|cloud|database|cyber|web|e-?commerce|digital|systems|graphics)/, { kw: 'computer,technology', icon: '💻', c: ['#0d6e6e', '#09504f'] }],
-    [/(nurs|midwif|medical|pharmac|health|physio|medicine|biomed|laborator)/, { kw: 'medical,hospital', icon: '🩺', c: ['#c0392b', '#7b241c'] }],
-    [/(law|magistr|legal)/, { kw: 'law,courthouse', icon: '⚖️', c: ['#34495e', '#2c3e50'] }],
-    [/(account|bank|financ|econom|market|business|management|administration|bba|mba|commerce|logistic|transport|shipping|project|human resource)/, { kw: 'business,office', icon: '📊', c: ['#1f6f8b', '#16505f'] }],
-    [/(engineer|civil|electric|telecom|mechanic)/, { kw: 'engineering,construction', icon: '🛠️', c: ['#e67e22', '#a85b11'] }],
-    [/(journal|communicat|advertis|public relation|media)/, { kw: 'journalism,microphone', icon: '🎙️', c: ['#8e44ad', '#5e2d73'] }],
-    [/(tourism|hotel|travel|catering|hospitality)/, { kw: 'hotel,tourism', icon: '🏨', c: ['#16a085', '#0e6655'] }],
-    [/(bakery|food)/, { kw: 'bakery,food', icon: '🍞', c: ['#d35400', '#a04000'] }],
-    [/(beauty|cosmetic|esthetic|hairdress)/, { kw: 'beauty,salon', icon: '💄', c: ['#d81b60', '#880e4f'] }],
-    [/(fashion|clothing|design)/, { kw: 'fashion,tailor', icon: '👗', c: ['#6d4c41', '#4e342e'] }],
-    [/(theolog|religio)/, { kw: 'church', icon: '⛪', c: ['#5d4037', '#3e2723'] }],
-    [/(statistic|demograph|mathematic|physic|data|science)/, { kw: 'science,laboratory', icon: '🔬', c: ['#2980b9', '#1c5980'] }],
-    [/(english|letters|arts|language)/, { kw: 'books,library', icon: '📚', c: ['#7f8c8d', '#5d6d6e'] }],
-    [/(political|international relation|public administr|customs|treasury|governance)/, { kw: 'government,parliament', icon: '🏛️', c: ['#596275', '#3d4453'] }],
+    [/(software|comput|\bit\b|information tech|network|cloud|database|cyber|web|e-?commerce|digital|systems|graphics)/, { key: 'technology', icon: '💻', c: ['#0d6e6e', '#09504f'] }],
+    [/(nurs|midwif|medical|pharmac|health|physio|medicine|biomed|laborator)/, { key: 'medical', icon: '🩺', c: ['#c0392b', '#7b241c'] }],
+    [/(law|magistr|legal)/, { key: 'law', icon: '⚖️', c: ['#34495e', '#2c3e50'] }],
+    [/(account|bank|financ|econom|market|business|management|administration|bba|mba|commerce|logistic|transport|shipping|project|human resource)/, { key: 'business', icon: '📊', c: ['#1f6f8b', '#16505f'] }],
+    [/(engineer|civil|electric|telecom|mechanic)/, { key: 'engineering', icon: '🛠️', c: ['#e67e22', '#a85b11'] }],
+    [/(journal|communicat|advertis|public relation|media)/, { key: 'communication', icon: '🎙️', c: ['#8e44ad', '#5e2d73'] }],
+    [/(tourism|hotel|travel|catering|hospitality)/, { key: 'tourism', icon: '🏨', c: ['#16a085', '#0e6655'] }],
+    [/(bakery|food)/, { key: 'food', icon: '🍞', c: ['#d35400', '#a04000'] }],
+    [/(beauty|cosmetic|esthetic|hairdress)/, { key: 'beauty', icon: '💄', c: ['#d81b60', '#880e4f'] }],
+    [/(fashion|clothing|design)/, { key: 'fashion', icon: '👗', c: ['#6d4c41', '#4e342e'] }],
+    [/(theolog|religio)/, { key: 'theology', icon: '⛪', c: ['#5d4037', '#3e2723'] }],
+    [/(statistic|demograph|mathematic|physic|data|science)/, { key: 'science', icon: '🔬', c: ['#2980b9', '#1c5980'] }],
+    [/(english|letters|arts|language)/, { key: 'arts', icon: '📚', c: ['#7f8c8d', '#5d6d6e'] }],
+    [/(political|international relation|public administr|customs|treasury|governance)/, { key: 'government', icon: '🏛️', c: ['#596275', '#3d4453'] }],
   ];
   for (const [re, v] of map) if (re.test(t)) return v;
-  return { kw: 'university,campus', icon: '🎓', c: ['#0d6e6e', '#09504f'] };
+  return { key: 'university', icon: '🎓', c: ['#0d6e6e', '#09504f'] };
 }
 
 // Programmes as an image slideshow (carousel).
@@ -200,7 +200,7 @@ function renderPrograms(s) {
   if (!s.programs.length) return '';
   const slides = s.programs.map((p) => {
     const f = progField(p.name + ' ' + (p.faculty || ''));
-    const img = `https://loremflickr.com/640/360/${f.kw}?lock=${p.id}`;
+    const img = `images/${f.key}.svg`; // local, always available
     const meta = [p.level, p.durationMonths ? p.durationMonths + ' months' : null, fmtMoney(p.tuitionFee, s.currency)].filter(Boolean).join(' · ');
     return `
       <div class="slide">

@@ -42,6 +42,21 @@ const programs = [
   { id: 14, schoolId: 7, name: 'MBA Business Administration', level: 'Master', durationMonths: 24, tuitionFee: 850000 },
   { id: 15, schoolId: 8, name: 'HND Software Engineering', level: 'Diploma', durationMonths: 24, tuitionFee: 600000 },
   { id: 16, schoolId: 8, name: 'BSc Network & Security', level: 'Bachelor', durationMonths: 36, tuitionFee: 650000 },
+  // YIBS — School of Medical & Biomedical Sciences
+  { id: 17, schoolId: 7, name: 'HND Nursing', level: 'Diploma', durationMonths: 36, tuitionFee: 600000 },
+  { id: 18, schoolId: 7, name: 'HND Midwifery', level: 'Diploma', durationMonths: 36, tuitionFee: 600000 },
+  { id: 19, schoolId: 7, name: 'HND Medical Laboratory Sciences', level: 'Diploma', durationMonths: 36, tuitionFee: 550000 },
+  { id: 20, schoolId: 7, name: 'HND Pharmacy Technology', level: 'Diploma', durationMonths: 24, tuitionFee: 500000 },
+  // YIBS — School of Home Economics & Social Works
+  { id: 21, schoolId: 7, name: 'HND Bakery & Food Processing', level: 'Diploma', durationMonths: 24, tuitionFee: 350000 },
+  { id: 22, schoolId: 7, name: 'HND Beauty Care & Cosmetics', level: 'Diploma', durationMonths: 24, tuitionFee: 300000 },
+  { id: 23, schoolId: 7, name: 'HND Hairdressing', level: 'Diploma', durationMonths: 24, tuitionFee: 300000 },
+  { id: 24, schoolId: 7, name: 'HND Fashion Design & Clothing', level: 'Diploma', durationMonths: 24, tuitionFee: 350000 },
+  // YIBS — School of Computer Engineering
+  { id: 25, schoolId: 7, name: 'BTech Computer Science & Network', level: 'Bachelor', durationMonths: 36, tuitionFee: 550000 },
+  { id: 26, schoolId: 7, name: 'BTech Network & Security', level: 'Bachelor', durationMonths: 36, tuitionFee: 600000 },
+  { id: 27, schoolId: 7, name: 'HND Computer Graphics & Web Design', level: 'Diploma', durationMonths: 24, tuitionFee: 450000 },
+  { id: 28, schoolId: 7, name: 'BTech Cloud Computing & Virtualization', level: 'Bachelor', durationMonths: 36, tuitionFee: 600000 },
 ];
 
 const users = [

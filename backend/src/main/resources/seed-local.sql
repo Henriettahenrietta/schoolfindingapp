@@ -45,6 +45,33 @@ INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BTech Software Engineering', 'Bachelor', 36, 600000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'MBA Business Administration', 'Master', 24, 850000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+-- YIBS — School of Medical & Biomedical Sciences
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Nursing', 'Diploma', 36, 600000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Midwifery', 'Diploma', 36, 600000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Medical Laboratory Sciences', 'Diploma', 36, 550000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Pharmacy Technology', 'Diploma', 24, 500000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+-- YIBS — School of Home Economics & Social Works
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Bakery & Food Processing', 'Diploma', 24, 350000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Beauty Care & Cosmetics', 'Diploma', 24, 300000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Hairdressing', 'Diploma', 24, 300000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Fashion Design & Clothing', 'Diploma', 24, 350000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+-- YIBS — School of Computer Engineering
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BTech Computer Science & Network', 'Bachelor', 36, 550000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BTech Network & Security', 'Bachelor', 36, 600000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'HND Computer Graphics & Web Design', 'Diploma', 24, 450000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BTech Cloud Computing & Virtualization', 'Bachelor', 36, 600000 FROM school WHERE name = 'Yaoundé International Business School (YIBS)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'HND Software Engineering', 'Diploma', 24, 600000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)

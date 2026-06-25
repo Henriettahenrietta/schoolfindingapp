@@ -12,8 +12,9 @@ data class AppProperties(
     data class Region(
         val country: String = "Cameroon",
         val currency: String = "XAF",
-        val mapCenterLat: Double = 4.0511,
-        val mapCenterLng: Double = 9.7679,
+        // Centred on Yaoundé (the app lists universities in Yaoundé)
+        val mapCenterLat: Double = 3.8480,
+        val mapCenterLng: Double = 11.5021,
     )
 
     data class Firebase(

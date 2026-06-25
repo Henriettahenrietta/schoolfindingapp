@@ -101,13 +101,10 @@ function cardHtml(s) {
 async function loadSchools() {
   const params = new URLSearchParams();
   const q = document.getElementById('q').value.trim();
-  const cat = document.getElementById('category').value;
-  const city = document.getElementById('city').value.trim();
   const sort = document.getElementById('sort').value;
   if (q) params.set('q', q);
-  if (cat) params.set('category', cat);
-  if (city) params.set('city', city);
   if (sort) params.set('sort', sort);
+  params.set('category', 'UNIVERSITY'); // app lists universities only
   const meta = document.getElementById('resultMeta');
   const results = document.getElementById('results');
   results.innerHTML = '<p class="muted">Loading…</p>';

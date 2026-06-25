@@ -15,30 +15,29 @@ const PORT = process.env.PORT || 8080;
 const NOW = '2026-01-01T08:00:00Z';
 
 const schools = [
-  { id: 1, name: 'University of Buea', category: 'UNIVERSITY', description: 'Anglo-Saxon state university known for science, technology and health programmes.', city: 'Buea', region: 'South-West', address: 'Molyko, Buea', latitude: 4.1559, longitude: 9.2891, tuitionFee: 50000, currency: 'XAF', website: 'https://www.ubuea.cm', phone: '+237 233 32 21 34', email: 'info@ubuea.cm', coverImageUrl: null },
-  { id: 2, name: 'University of Yaoundé I', category: 'UNIVERSITY', description: "One of Cameroon's oldest and largest universities, strong in sciences and medicine.", city: 'Yaoundé', region: 'Centre', address: 'Ngoa-Ekelle, Yaoundé', latitude: 3.8634, longitude: 11.5012, tuitionFee: 50000, currency: 'XAF', website: 'https://www.uy1.uninet.cm', phone: '+237 222 23 44 91', email: 'contact@uy1.cm', coverImageUrl: null },
-  { id: 3, name: 'University of Douala', category: 'UNIVERSITY', description: 'Major state university with strong business, engineering and economics faculties.', city: 'Douala', region: 'Littoral', address: 'Bali, Douala', latitude: 4.0470, longitude: 9.6890, tuitionFee: 50000, currency: 'XAF', website: 'https://www.univ-douala.cm', phone: '+237 233 40 75 69', email: 'info@univ-douala.cm', coverImageUrl: null },
-  { id: 4, name: 'The University of Bamenda', category: 'UNIVERSITY', description: 'State university serving the North-West region across multiple campuses.', city: 'Bambili', region: 'North-West', address: 'Bambili, Bamenda', latitude: 5.9930, longitude: 10.2510, tuitionFee: 50000, currency: 'XAF', website: 'https://www.uniba.cm', phone: '+237 233 36 27 65', email: 'info@uniba.cm', coverImageUrl: null },
-  { id: 5, name: 'Catholic University of Central Africa', category: 'UNIVERSITY', description: 'Private Catholic university (UCAC) recognised for management, law and social sciences.', city: 'Yaoundé', region: 'Centre', address: 'Nkolbisson, Yaoundé', latitude: 3.8730, longitude: 11.4380, tuitionFee: 900000, currency: 'XAF', website: 'https://www.ucac-icy.net', phone: '+237 222 23 74 00', email: 'info@ucac.cm', coverImageUrl: null },
-  { id: 6, name: 'The ICT University', category: 'UNIVERSITY', description: 'Private university focused on information and communication technology.', city: 'Yaoundé', region: 'Centre', address: 'Messassi, Yaoundé', latitude: 3.9180, longitude: 11.5360, tuitionFee: 750000, currency: 'XAF', website: 'https://ictuniversity.org', phone: '+237 242 61 23 23', email: 'info@ictuniversity.edu.cm', coverImageUrl: null },
-  { id: 7, name: 'Siantou Higher Institute', category: 'VOCATIONAL', description: 'Higher professional institute offering diplomas in IT, health and business.', city: 'Yaoundé', region: 'Centre', address: 'Elig-Essono, Yaoundé', latitude: 3.8760, longitude: 11.5210, tuitionFee: 450000, currency: 'XAF', website: 'https://siantou.com', phone: '+237 222 22 12 34', email: 'contact@siantou.cm', coverImageUrl: null },
-  { id: 8, name: 'Government Bilingual High School Molyko', category: 'HIGH_SCHOOL', description: 'Large public bilingual secondary and high school in Buea.', city: 'Buea', region: 'South-West', address: 'Molyko, Buea', latitude: 4.1520, longitude: 9.2880, tuitionFee: 25000, currency: 'XAF', website: null, phone: '+237 233 32 20 10', email: null, coverImageUrl: null },
-  { id: 9, name: 'Saker Baptist College', category: 'SECONDARY', description: "Reputable girls' boarding secondary school in Limbe.", city: 'Limbe', region: 'South-West', address: 'Bonjongo Road, Limbe', latitude: 4.0210, longitude: 9.2050, tuitionFee: 350000, currency: 'XAF', website: null, phone: '+237 233 33 21 88', email: 'info@sakerbaptist.cm', coverImageUrl: null },
-  { id: 10, name: 'Sacred Heart College Mankon', category: 'SECONDARY', description: "Catholic boys' secondary school in Bamenda with a long academic tradition.", city: 'Bamenda', region: 'North-West', address: 'Mankon, Bamenda', latitude: 5.9610, longitude: 10.1460, tuitionFee: 300000, currency: 'XAF', website: null, phone: '+237 233 36 11 22', email: null, coverImageUrl: null },
+  { id: 1, name: 'University of Yaoundé I', category: 'UNIVERSITY', description: "Cameroon's flagship public university, strong in sciences, medicine, the arts and engineering (incl. the National Advanced School of Engineering).", city: 'Yaoundé', region: 'Centre', address: 'Ngoa-Ekellé, Yaoundé', latitude: 3.8667, longitude: 11.4986, tuitionFee: 50000, currency: 'XAF', website: 'https://www.uy1.cm', phone: null, email: null, coverImageUrl: null },
+  { id: 2, name: 'University of Yaoundé II', category: 'UNIVERSITY', description: 'Public university based in Soa, specialised in law, economics, management, political science and governance.', city: 'Yaoundé', region: 'Centre', address: 'Soa, Yaoundé', latitude: 3.9810, longitude: 11.5650, tuitionFee: 50000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
+  { id: 3, name: 'Catholic University of Central Africa (UCAC)', category: 'UNIVERSITY', description: 'Private Catholic university renowned for management, law, social sciences and health.', city: 'Yaoundé', region: 'Centre', address: 'Nkolbisson, Yaoundé', latitude: 3.8730, longitude: 11.4380, tuitionFee: 900000, currency: 'XAF', website: 'https://www.ucac-icy.net', phone: null, email: null, coverImageUrl: null },
+  { id: 4, name: 'Protestant University of Central Africa (UPAC)', category: 'UNIVERSITY', description: 'Private university founded by Protestant churches, with faculties in theology, health sciences and management.', city: 'Yaoundé', region: 'Centre', address: 'Djoungolo, Yaoundé', latitude: 3.8900, longitude: 11.5210, tuitionFee: 800000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
+  { id: 5, name: 'The ICT University', category: 'UNIVERSITY', description: 'Private university focused on information and communication technology and business.', city: 'Yaoundé', region: 'Centre', address: 'Messassi, Yaoundé', latitude: 3.9180, longitude: 11.5360, tuitionFee: 750000, currency: 'XAF', website: 'https://ictuniversity.org', phone: null, email: null, coverImageUrl: null },
+  { id: 6, name: 'PKFokam Institute of Excellence', category: 'UNIVERSITY', description: 'Private institution of higher education in Yaoundé offering computing, business, banking and finance.', city: 'Yaoundé', region: 'Centre', address: 'Santa Barbara, Yaoundé', latitude: 3.8400, longitude: 11.5300, tuitionFee: 700000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
 ];
 
 const programs = [
-  { id: 1, schoolId: 1, name: 'BSc Computer Science', level: 'Bachelor', durationMonths: 36, tuitionFee: 60000 },
-  { id: 2, schoolId: 1, name: 'BSc Nursing', level: 'Bachelor', durationMonths: 36, tuitionFee: 80000 },
-  { id: 3, schoolId: 2, name: 'MD Medicine', level: 'Doctorate', durationMonths: 84, tuitionFee: 100000 },
-  { id: 4, schoolId: 3, name: 'BSc Economics', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
-  { id: 5, schoolId: 6, name: 'BSc Software Engineering', level: 'Bachelor', durationMonths: 48, tuitionFee: 800000 },
-  { id: 6, schoolId: 7, name: 'HND Software Engineering', level: 'Diploma', durationMonths: 24, tuitionFee: 450000 },
-  { id: 7, schoolId: 8, name: 'GCE A-Level Science', level: 'A-Level', durationMonths: 24, tuitionFee: 25000 },
+  { id: 1, schoolId: 1, name: 'BSc Computer Science', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 2, schoolId: 1, name: 'Doctor of Medicine', level: 'Doctorate', durationMonths: 84, tuitionFee: 50000 },
+  { id: 3, schoolId: 2, name: 'LLB Law', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 4, schoolId: 2, name: 'BSc Economics', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 5, schoolId: 3, name: 'BSc Management', level: 'Bachelor', durationMonths: 36, tuitionFee: 900000 },
+  { id: 6, schoolId: 3, name: 'BSc Nursing', level: 'Bachelor', durationMonths: 36, tuitionFee: 950000 },
+  { id: 7, schoolId: 4, name: 'BSc Health Sciences', level: 'Bachelor', durationMonths: 36, tuitionFee: 850000 },
+  { id: 8, schoolId: 5, name: 'BSc Software Engineering', level: 'Bachelor', durationMonths: 48, tuitionFee: 800000 },
+  { id: 9, schoolId: 5, name: 'MBA', level: 'Master', durationMonths: 24, tuitionFee: 1200000 },
+  { id: 10, schoolId: 6, name: 'BSc Banking & Finance', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
 ];
 
 const users = [
-  { id: 1, firebaseUid: 'admin-dev', email: 'admin@schoolfinder.cm', displayName: 'Platform Admin', role: 'ADMIN' },
+  { id: 1, firebaseUid: 'admin-dev', email: 'admin@unimatch.cm', displayName: 'Platform Admin', role: 'ADMIN' },
   { id: 2, firebaseUid: 'student-1', email: 'ada@example.cm', displayName: 'Ada N.', role: 'STUDENT' },
   { id: 3, firebaseUid: 'student-2', email: 'bih@example.cm', displayName: 'Bih T.', role: 'STUDENT' },
   { id: 4, firebaseUid: 'student-3', email: 'che@example.cm', displayName: 'Che M.', role: 'STUDENT' },
@@ -47,8 +46,8 @@ const users = [
 let reviews = [
   { id: 1, schoolId: 1, userId: 2, rating: 5, comment: 'Great campus and supportive lecturers.', status: 'APPROVED', createdAt: NOW },
   { id: 2, schoolId: 1, userId: 3, rating: 4, comment: 'Strong programmes but large class sizes.', status: 'APPROVED', createdAt: NOW },
-  { id: 3, schoolId: 6, userId: 2, rating: 4, comment: 'Good for tech, modern facilities.', status: 'APPROVED', createdAt: NOW },
-  { id: 4, schoolId: 9, userId: 4, rating: 5, comment: 'Excellent academic results year after year.', status: 'APPROVED', createdAt: NOW },
+  { id: 3, schoolId: 5, userId: 2, rating: 4, comment: 'Good for tech, modern facilities.', status: 'APPROVED', createdAt: NOW },
+  { id: 4, schoolId: 3, userId: 4, rating: 5, comment: 'Excellent reputation and strong discipline.', status: 'APPROVED', createdAt: NOW },
 ];
 
 let favorites = []; // { userId, schoolId }
@@ -140,7 +139,7 @@ const server = http.createServer(async (req, res) => {
 
   // Meta
   if (path === '/api/v1/meta' && method === 'GET') {
-    return send(res, 200, { appName: 'UniMatch Cameroon', tagline: 'Find Your Future University', country: 'Cameroon', currency: 'XAF', mapCenterLat: 4.0511, mapCenterLng: 9.7679, categories: ['PRIMARY', 'SECONDARY', 'HIGH_SCHOOL', 'VOCATIONAL', 'UNIVERSITY'], firebaseEnabled: false });
+    return send(res, 200, { appName: 'UniMatch Cameroon', tagline: 'Find Your Future University', country: 'Cameroon', currency: 'XAF', mapCenterLat: 3.8480, mapCenterLng: 11.5021, categories: ['UNIVERSITY'], firebaseEnabled: false });
   }
 
   // Compare (must precede /schools/:id)

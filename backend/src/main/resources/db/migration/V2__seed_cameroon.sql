@@ -1,90 +1,76 @@
--- Sample Cameroon data so the app is usable out of the box.
+-- Sample data: universities in Yaoundé, Cameroon, so the app is usable out of the box.
 
 -- Users (dev firebase uids; in dev mode pass these via the X-Debug-Uid header)
 INSERT INTO app_user (firebase_uid, email, display_name, role) VALUES
-    ('admin-dev',  'admin@schoolfinder.cm',  'Platform Admin', 'ADMIN'),
-    ('student-1',  'ada@example.cm',          'Ada N.',        'STUDENT'),
-    ('student-2',  'bih@example.cm',          'Bih T.',        'STUDENT'),
-    ('student-3',  'che@example.cm',          'Che M.',        'STUDENT');
+    ('admin-dev',  'admin@unimatch.cm', 'Platform Admin', 'ADMIN'),
+    ('student-1',  'ada@example.cm',     'Ada N.',        'STUDENT'),
+    ('student-2',  'bih@example.cm',     'Bih T.',        'STUDENT'),
+    ('student-3',  'che@example.cm',     'Che M.',        'STUDENT');
 
--- Schools
+-- Universities (Yaoundé only)
 INSERT INTO school (name, category, description, city, region, address, latitude, longitude, tuition_fee, currency, website, phone, email, cover_image_url) VALUES
-    ('University of Buea', 'UNIVERSITY',
-     'Anglo-Saxon state university known for its science, technology and health programmes.',
-     'Buea', 'South-West', 'Molyko, Buea', 4.1559, 9.2891, 50000, 'XAF',
-     'https://www.ubuea.cm', '+237 233 32 21 34', 'info@ubuea.cm', NULL),
-
     ('University of Yaoundé I', 'UNIVERSITY',
-     'One of Cameroon''s oldest and largest universities, strong in sciences and medicine.',
-     'Yaoundé', 'Centre', 'Ngoa-Ekelle, Yaoundé', 3.8634, 11.5012, 50000, 'XAF',
-     'https://www.uy1.uninet.cm', '+237 222 23 44 91', 'contact@uy1.cm', NULL),
+     'Cameroon''s flagship public university, strong in sciences, medicine, the arts and engineering (incl. the National Advanced School of Engineering).',
+     'Yaoundé', 'Centre', 'Ngoa-Ekellé, Yaoundé', 3.8667, 11.4986, 50000, 'XAF',
+     'https://www.uy1.cm', NULL, NULL, NULL),
 
-    ('University of Douala', 'UNIVERSITY',
-     'Major state university with strong business, engineering and economics faculties.',
-     'Douala', 'Littoral', 'Bali, Douala', 4.0470, 9.6890, 50000, 'XAF',
-     'https://www.univ-douala.cm', '+237 233 40 75 69', 'info@univ-douala.cm', NULL),
+    ('University of Yaoundé II', 'UNIVERSITY',
+     'Public university based in Soa, specialised in law, economics, management, political science and governance.',
+     'Yaoundé', 'Centre', 'Soa, Yaoundé', 3.9810, 11.5650, 50000, 'XAF',
+     NULL, NULL, NULL, NULL),
 
-    ('The University of Bamenda', 'UNIVERSITY',
-     'State university serving the North-West region across multiple campuses.',
-     'Bambili', 'North-West', 'Bambili, Bamenda', 5.9930, 10.2510, 50000, 'XAF',
-     'https://www.uniba.cm', '+237 233 36 27 65', 'info@uniba.cm', NULL),
-
-    ('Catholic University of Central Africa', 'UNIVERSITY',
-     'Private Catholic university (UCAC) recognised for management, law and social sciences.',
+    ('Catholic University of Central Africa (UCAC)', 'UNIVERSITY',
+     'Private Catholic university renowned for management, law, social sciences and health.',
      'Yaoundé', 'Centre', 'Nkolbisson, Yaoundé', 3.8730, 11.4380, 900000, 'XAF',
-     'https://www.ucac-icy.net', '+237 222 23 74 00', 'info@ucac.cm', NULL),
+     'https://www.ucac-icy.net', NULL, NULL, NULL),
+
+    ('Protestant University of Central Africa (UPAC)', 'UNIVERSITY',
+     'Private university founded by Protestant churches, with faculties in theology, health sciences and management.',
+     'Yaoundé', 'Centre', 'Djoungolo, Yaoundé', 3.8900, 11.5210, 800000, 'XAF',
+     NULL, NULL, NULL, NULL),
 
     ('The ICT University', 'UNIVERSITY',
-     'Private university focused on information and communication technology.',
+     'Private university focused on information and communication technology and business.',
      'Yaoundé', 'Centre', 'Messassi, Yaoundé', 3.9180, 11.5360, 750000, 'XAF',
-     'https://ictuniversity.org', '+237 242 61 23 23', 'info@ictuniversity.edu.cm', NULL),
+     'https://ictuniversity.org', NULL, NULL, NULL),
 
-    ('Siantou Higher Institute', 'VOCATIONAL',
-     'Higher professional institute offering diplomas in IT, health and business.',
-     'Yaoundé', 'Centre', 'Elig-Essono, Yaoundé', 3.8760, 11.5210, 450000, 'XAF',
-     'https://siantou.com', '+237 222 22 12 34', 'contact@siantou.cm', NULL),
+    ('PKFokam Institute of Excellence', 'UNIVERSITY',
+     'Private institution of higher education in Yaoundé offering computing, business, banking and finance.',
+     'Yaoundé', 'Centre', 'Santa Barbara, Yaoundé', 3.8400, 11.5300, 700000, 'XAF',
+     NULL, NULL, NULL, NULL);
 
-    ('Government Bilingual High School Molyko', 'HIGH_SCHOOL',
-     'Large public bilingual secondary and high school in Buea.',
-     'Buea', 'South-West', 'Molyko, Buea', 4.1520, 9.2880, 25000, 'XAF',
-     NULL, '+237 233 32 20 10', NULL, NULL),
-
-    ('Saker Baptist College', 'SECONDARY',
-     'Reputable girls'' boarding secondary school in Limbe.',
-     'Limbe', 'South-West', 'Bonjongo Road, Limbe', 4.0210, 9.2050, 350000, 'XAF',
-     NULL, '+237 233 33 21 88', 'info@sakerbaptist.cm', NULL),
-
-    ('Sacred Heart College Mankon', 'SECONDARY',
-     'Catholic boys'' secondary school in Bamenda with a long academic tradition.',
-     'Bamenda', 'North-West', 'Mankon, Bamenda', 5.9610, 10.1460, 300000, 'XAF',
-     NULL, '+237 233 36 11 22', NULL, NULL);
-
--- Programs (linked by school name)
+-- Programs (linked by university name)
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'BSc Computer Science', 'Bachelor', 36, 60000 FROM school WHERE name = 'University of Buea';
+SELECT id, 'BSc Computer Science', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé I';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'BSc Nursing', 'Bachelor', 36, 80000 FROM school WHERE name = 'University of Buea';
+SELECT id, 'Doctor of Medicine', 'Doctorate', 84, 50000 FROM school WHERE name = 'University of Yaoundé I';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'MD Medicine', 'Doctorate', 84, 100000 FROM school WHERE name = 'University of Yaoundé I';
+SELECT id, 'LLB Law', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé II';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'BSc Economics', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Douala';
+SELECT id, 'BSc Economics', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé II';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BSc Management', 'Bachelor', 36, 900000 FROM school WHERE name = 'Catholic University of Central Africa (UCAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BSc Nursing', 'Bachelor', 36, 950000 FROM school WHERE name = 'Catholic University of Central Africa (UCAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
+SELECT id, 'BSc Health Sciences', 'Bachelor', 36, 850000 FROM school WHERE name = 'Protestant University of Central Africa (UPAC)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Software Engineering', 'Bachelor', 48, 800000 FROM school WHERE name = 'The ICT University';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'HND Software Engineering', 'Diploma', 24, 450000 FROM school WHERE name = 'Siantou Higher Institute';
+SELECT id, 'MBA', 'Master', 24, 1200000 FROM school WHERE name = 'The ICT University';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
-SELECT id, 'GCE A-Level Science', 'A-Level', 24, 25000 FROM school WHERE name = 'Government Bilingual High School Molyko';
+SELECT id, 'BSc Banking & Finance', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
 
 -- A few approved reviews so ratings are populated
 INSERT INTO review (school_id, user_id, rating, comment, status)
 SELECT s.id, u.id, 5, 'Great campus and supportive lecturers.', 'APPROVED'
-FROM school s, app_user u WHERE s.name = 'University of Buea' AND u.firebase_uid = 'student-1';
+FROM school s, app_user u WHERE s.name = 'University of Yaoundé I' AND u.firebase_uid = 'student-1';
 INSERT INTO review (school_id, user_id, rating, comment, status)
 SELECT s.id, u.id, 4, 'Strong programmes but large class sizes.', 'APPROVED'
-FROM school s, app_user u WHERE s.name = 'University of Buea' AND u.firebase_uid = 'student-2';
+FROM school s, app_user u WHERE s.name = 'University of Yaoundé I' AND u.firebase_uid = 'student-2';
 INSERT INTO review (school_id, user_id, rating, comment, status)
 SELECT s.id, u.id, 4, 'Good for tech, modern facilities.', 'APPROVED'
 FROM school s, app_user u WHERE s.name = 'The ICT University' AND u.firebase_uid = 'student-1';
 INSERT INTO review (school_id, user_id, rating, comment, status)
-SELECT s.id, u.id, 5, 'Excellent academic results year after year.', 'APPROVED'
-FROM school s, app_user u WHERE s.name = 'Saker Baptist College' AND u.firebase_uid = 'student-3';
+SELECT s.id, u.id, 5, 'Excellent reputation and strong discipline.', 'APPROVED'
+FROM school s, app_user u WHERE s.name = 'Catholic University of Central Africa (UCAC)' AND u.firebase_uid = 'student-3';

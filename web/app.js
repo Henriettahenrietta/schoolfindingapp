@@ -172,23 +172,75 @@ async function loadCompare() {
 }
 function clearCompare() { compareIds = []; saveCompare(); loadCompare(); if (currentView === 'discover') loadSchools(); }
 
-// Group a school's programmes by their School/faculty, preserving order.
+// Pick a topical image keyword, icon and colour for a programme based on its field.
+function progField(text) {
+  const t = (text || '').toLowerCase();
+  const map = [
+    [/(software|comput|\bit\b|information tech|network|cloud|database|cyber|web|e-?commerce|digital|systems|graphics)/, { kw: 'computer,technology', icon: '💻', c: ['#0d6e6e', '#09504f'] }],
+    [/(nurs|midwif|medical|pharmac|health|physio|medicine|biomed|laborator)/, { kw: 'medical,hospital', icon: '🩺', c: ['#c0392b', '#7b241c'] }],
+    [/(law|magistr|legal)/, { kw: 'law,courthouse', icon: '⚖️', c: ['#34495e', '#2c3e50'] }],
+    [/(account|bank|financ|econom|market|business|management|administration|bba|mba|commerce|logistic|transport|shipping|project|human resource)/, { kw: 'business,office', icon: '📊', c: ['#1f6f8b', '#16505f'] }],
+    [/(engineer|civil|electric|telecom|mechanic)/, { kw: 'engineering,construction', icon: '🛠️', c: ['#e67e22', '#a85b11'] }],
+    [/(journal|communicat|advertis|public relation|media)/, { kw: 'journalism,microphone', icon: '🎙️', c: ['#8e44ad', '#5e2d73'] }],
+    [/(tourism|hotel|travel|catering|hospitality)/, { kw: 'hotel,tourism', icon: '🏨', c: ['#16a085', '#0e6655'] }],
+    [/(bakery|food)/, { kw: 'bakery,food', icon: '🍞', c: ['#d35400', '#a04000'] }],
+    [/(beauty|cosmetic|esthetic|hairdress)/, { kw: 'beauty,salon', icon: '💄', c: ['#d81b60', '#880e4f'] }],
+    [/(fashion|clothing|design)/, { kw: 'fashion,tailor', icon: '👗', c: ['#6d4c41', '#4e342e'] }],
+    [/(theolog|religio)/, { kw: 'church', icon: '⛪', c: ['#5d4037', '#3e2723'] }],
+    [/(statistic|demograph|mathematic|physic|data|science)/, { kw: 'science,laboratory', icon: '🔬', c: ['#2980b9', '#1c5980'] }],
+    [/(english|letters|arts|language)/, { kw: 'books,library', icon: '📚', c: ['#7f8c8d', '#5d6d6e'] }],
+    [/(political|international relation|public administr|customs|treasury|governance)/, { kw: 'government,parliament', icon: '🏛️', c: ['#596275', '#3d4453'] }],
+  ];
+  for (const [re, v] of map) if (re.test(t)) return v;
+  return { kw: 'university,campus', icon: '🎓', c: ['#0d6e6e', '#09504f'] };
+}
+
+// Programmes as an image slideshow (carousel).
 function renderPrograms(s) {
   if (!s.programs.length) return '';
-  const order = [];
-  const byFac = new Map();
-  for (const p of s.programs) {
-    const key = p.faculty || 'Programmes';
-    if (!byFac.has(key)) { byFac.set(key, []); order.push(key); }
-    byFac.get(key).push(p);
-  }
-  let html = '<div class="section-title">Programmes by School</div>';
-  for (const fac of order) {
-    html += `<div class="faculty"><h4>${esc(fac)}</h4><ul class="prog-list">` +
-      byFac.get(fac).map((p) => `<li><span class="prog-name">${esc(p.name)}${p.level ? ' · ' + esc(p.level) : ''}${p.durationMonths ? ' · ' + p.durationMonths + ' mo' : ''}</span><span class="price">${fmtMoney(p.tuitionFee, s.currency)}</span></li>`).join('') +
-      '</ul></div>';
-  }
-  return html;
+  const slides = s.programs.map((p) => {
+    const f = progField(p.name + ' ' + (p.faculty || ''));
+    const img = `https://loremflickr.com/640/360/${f.kw}?lock=${p.id}`;
+    const meta = [p.level, p.durationMonths ? p.durationMonths + ' months' : null, fmtMoney(p.tuitionFee, s.currency)].filter(Boolean).join(' · ');
+    return `
+      <div class="slide">
+        <div class="slide-img" style="background:linear-gradient(135deg, ${f.c[0]}, ${f.c[1]})">
+          <span class="slide-emoji">${f.icon}</span>
+          <img src="${img}" alt="${esc(p.name)}" loading="lazy" onerror="this.remove()">
+          ${p.faculty ? `<span class="slide-fac">${esc(p.faculty)}</span>` : ''}
+        </div>
+        <div class="slide-body">
+          <h4>${esc(p.name)}</h4>
+          <div class="slide-meta">${esc(meta)}</div>
+        </div>
+      </div>`;
+  }).join('');
+  return `
+    <div class="section-title">Programmes <span class="muted" style="font-weight:400">(${s.programs.length} — swipe ›)</span></div>
+    <div class="carousel">
+      <button type="button" class="car-btn prev" onclick="carScroll(this,-1)">‹</button>
+      <div class="car-track">${slides}</div>
+      <button type="button" class="car-btn next" onclick="carScroll(this,1)">›</button>
+    </div>`;
+}
+
+let carTimer;
+function carScroll(btn, dir) {
+  const track = btn.parentElement.querySelector('.car-track');
+  track.scrollBy({ left: dir * track.clientWidth * 0.9, behavior: 'smooth' });
+}
+function wireCarousel() {
+  clearInterval(carTimer);
+  const track = document.querySelector('#modalBody .car-track');
+  if (!track) return;
+  const advance = () => {
+    const max = track.scrollWidth - track.clientWidth - 4;
+    if (track.scrollLeft >= max) track.scrollTo({ left: 0, behavior: 'smooth' });
+    else track.scrollBy({ left: track.clientWidth * 0.9, behavior: 'smooth' });
+  };
+  carTimer = setInterval(advance, 3500);
+  track.addEventListener('mouseenter', () => clearInterval(carTimer));
+  track.addEventListener('mouseleave', () => { clearInterval(carTimer); carTimer = setInterval(advance, 3500); });
 }
 
 // ---------- detail modal ----------
@@ -221,6 +273,7 @@ async function openDetail(id) {
       ${reviewFormHtml(id)}
     `;
     wireReviewForm(id);
+    wireCarousel();
   } catch (e) { body.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
 function reviewHtml(r) {
@@ -271,8 +324,9 @@ function showView(v) {
 // ---------- init ----------
 document.querySelectorAll('.tab').forEach((t) => (t.onclick = () => showView(t.dataset.view)));
 document.getElementById('searchForm').onsubmit = (e) => { e.preventDefault(); loadSchools(); };
-document.getElementById('modalClose').onclick = () => document.getElementById('modal').classList.add('hidden');
-document.getElementById('modal').onclick = (e) => { if (e.target.id === 'modal') document.getElementById('modal').classList.add('hidden'); };
+function closeModal() { clearInterval(carTimer); document.getElementById('modal').classList.add('hidden'); }
+document.getElementById('modalClose').onclick = closeModal;
+document.getElementById('modal').onclick = (e) => { if (e.target.id === 'modal') closeModal(); };
 
 renderIdentity();
 saveCompare();

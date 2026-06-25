@@ -23,6 +23,9 @@ const schools = [
   { id: 6, name: 'PKFokam Institute of Excellence', category: 'UNIVERSITY', description: 'Private institution of higher education in Yaoundé offering computing, business, banking and finance.', city: 'Yaoundé', region: 'Centre', address: 'Santa Barbara, Yaoundé', latitude: 3.8400, longitude: 11.5300, tuitionFee: 700000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
   { id: 7, name: 'Yaoundé International Business School (YIBS)', category: 'UNIVERSITY', description: 'Affiliated with the University of Bamenda (UBa). Offers HND, Bachelor (BTech) and Master programmes across business & finance, management, communication, tourism & hotel management and computer engineering. Day & evening sessions.', city: 'Yaoundé', region: 'Centre', address: 'Bastos, Yaoundé', latitude: 3.8950, longitude: 11.5180, tuitionFee: 850000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
   { id: 8, name: 'CITEC Higher Institute of Technology (CITEC)', category: 'UNIVERSITY', description: 'Private higher institute in Yaoundé offering programmes in information technology, networking, software engineering and business management.', city: 'Yaoundé', region: 'Centre', address: 'Nsam, Yaoundé', latitude: 3.8350, longitude: 11.5160, tuitionFee: 600000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
+  { id: 9, name: 'National Advanced School of Engineering (ENSPY)', category: 'UNIVERSITY', description: 'Public grande école of engineering (Polytechnique) under the University of Yaoundé I — trains engineers in civil, computer, electrical and telecommunications engineering.', city: 'Yaoundé', region: 'Centre', address: 'Melen, Yaoundé', latitude: 3.8620, longitude: 11.4940, tuitionFee: 50000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
+  { id: 10, name: 'National School of Administration and Magistracy (ENAM)', category: 'UNIVERSITY', description: 'Public professional school training senior civil servants and magistrates in administration, magistracy, customs and treasury.', city: 'Yaoundé', region: 'Centre', address: 'Quartier du Lac, Yaoundé', latitude: 3.8700, longitude: 11.5100, tuitionFee: 50000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
+  { id: 11, name: 'Sub-regional Institute of Statistics and Applied Economics (ISSEA)', category: 'UNIVERSITY', description: 'CEMAC sub-regional institute training statisticians, statistical engineers and applied economists for Central Africa.', city: 'Yaoundé', region: 'Centre', address: 'Nkolbisson, Yaoundé', latitude: 3.8740, longitude: 11.4350, tuitionFee: 50000, currency: 'XAF', website: null, phone: null, email: null, coverImageUrl: null },
 ];
 
 const programs = [
@@ -57,6 +60,56 @@ const programs = [
   { id: 26, schoolId: 7, name: 'BTech Network & Security', level: 'Bachelor', durationMonths: 36, tuitionFee: 600000 },
   { id: 27, schoolId: 7, name: 'HND Computer Graphics & Web Design', level: 'Diploma', durationMonths: 24, tuitionFee: 450000 },
   { id: 28, schoolId: 7, name: 'BTech Cloud Computing & Virtualization', level: 'Bachelor', durationMonths: 36, tuitionFee: 600000 },
+  // University of Yaoundé I (schoolId 1)
+  { id: 29, schoolId: 1, name: 'BSc Mathematics', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 30, schoolId: 1, name: 'BSc Physics', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 31, schoolId: 1, name: 'LLB Law', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 32, schoolId: 1, name: 'BA English Modern Letters', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  // University of Yaoundé II (schoolId 2)
+  { id: 33, schoolId: 2, name: 'BSc Management', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 34, schoolId: 2, name: 'BSc Political Science', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 35, schoolId: 2, name: 'BSc International Relations', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 36, schoolId: 2, name: 'BSc Accounting & Finance', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  // Catholic University of Central Africa (schoolId 3)
+  { id: 37, schoolId: 3, name: 'LLB Law', level: 'Bachelor', durationMonths: 36, tuitionFee: 900000 },
+  { id: 38, schoolId: 3, name: 'BSc Accounting', level: 'Bachelor', durationMonths: 36, tuitionFee: 900000 },
+  { id: 39, schoolId: 3, name: 'BSc Social & Political Sciences', level: 'Bachelor', durationMonths: 36, tuitionFee: 900000 },
+  { id: 40, schoolId: 3, name: 'Doctor of Medicine', level: 'Doctorate', durationMonths: 84, tuitionFee: 1200000 },
+  // Protestant University of Central Africa (schoolId 4)
+  { id: 41, schoolId: 4, name: 'BTh Theology', level: 'Bachelor', durationMonths: 36, tuitionFee: 800000 },
+  { id: 42, schoolId: 4, name: 'BSc Management', level: 'Bachelor', durationMonths: 36, tuitionFee: 800000 },
+  { id: 43, schoolId: 4, name: 'BSc Nursing', level: 'Bachelor', durationMonths: 36, tuitionFee: 850000 },
+  { id: 44, schoolId: 4, name: 'BSc Computer Science', level: 'Bachelor', durationMonths: 36, tuitionFee: 800000 },
+  // The ICT University (schoolId 5)
+  { id: 45, schoolId: 5, name: 'BSc Information Technology', level: 'Bachelor', durationMonths: 36, tuitionFee: 750000 },
+  { id: 46, schoolId: 5, name: 'BSc Cybersecurity', level: 'Bachelor', durationMonths: 36, tuitionFee: 800000 },
+  { id: 47, schoolId: 5, name: 'BSc Business Administration', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
+  { id: 48, schoolId: 5, name: 'MSc Information Systems', level: 'Master', durationMonths: 24, tuitionFee: 1000000 },
+  // PKFokam Institute of Excellence (schoolId 6)
+  { id: 49, schoolId: 6, name: 'BSc Computer Science', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
+  { id: 50, schoolId: 6, name: 'BSc Accounting', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
+  { id: 51, schoolId: 6, name: 'BBA Business Administration', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
+  { id: 52, schoolId: 6, name: 'BSc Marketing', level: 'Bachelor', durationMonths: 36, tuitionFee: 700000 },
+  // CITEC Higher Institute of Technology (schoolId 8)
+  { id: 53, schoolId: 8, name: 'HND Computer Graphics & Web Design', level: 'Diploma', durationMonths: 24, tuitionFee: 550000 },
+  { id: 54, schoolId: 8, name: 'BSc Information Systems', level: 'Bachelor', durationMonths: 36, tuitionFee: 650000 },
+  { id: 55, schoolId: 8, name: 'HND Database Management', level: 'Diploma', durationMonths: 24, tuitionFee: 550000 },
+  { id: 56, schoolId: 8, name: 'BSc E-commerce & Digital Marketing', level: 'Bachelor', durationMonths: 36, tuitionFee: 600000 },
+  // National Advanced School of Engineering — ENSPY (schoolId 9)
+  { id: 57, schoolId: 9, name: 'BEng Civil Engineering', level: 'Bachelor', durationMonths: 60, tuitionFee: 50000 },
+  { id: 58, schoolId: 9, name: 'BEng Computer Engineering', level: 'Bachelor', durationMonths: 60, tuitionFee: 50000 },
+  { id: 59, schoolId: 9, name: 'BEng Electrical Engineering', level: 'Bachelor', durationMonths: 60, tuitionFee: 50000 },
+  { id: 60, schoolId: 9, name: 'BEng Telecommunications Engineering', level: 'Bachelor', durationMonths: 60, tuitionFee: 50000 },
+  // National School of Administration and Magistracy — ENAM (schoolId 10)
+  { id: 61, schoolId: 10, name: 'Public Administration', level: 'Master', durationMonths: 24, tuitionFee: 50000 },
+  { id: 62, schoolId: 10, name: 'Magistracy', level: 'Master', durationMonths: 24, tuitionFee: 50000 },
+  { id: 63, schoolId: 10, name: 'Customs Administration', level: 'Diploma', durationMonths: 24, tuitionFee: 50000 },
+  { id: 64, schoolId: 10, name: 'Treasury & Finance', level: 'Diploma', durationMonths: 24, tuitionFee: 50000 },
+  // Sub-regional Institute of Statistics & Applied Economics — ISSEA (schoolId 11)
+  { id: 65, schoolId: 11, name: 'Statistical Engineering', level: 'Master', durationMonths: 60, tuitionFee: 50000 },
+  { id: 66, schoolId: 11, name: 'Applied Statistics', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
+  { id: 67, schoolId: 11, name: 'Demography', level: 'Master', durationMonths: 24, tuitionFee: 50000 },
+  { id: 68, schoolId: 11, name: 'Economic Analysis', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },
 ];
 
 const users = [

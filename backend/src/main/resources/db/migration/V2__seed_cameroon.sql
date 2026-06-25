@@ -47,6 +47,21 @@ INSERT INTO school (name, category, description, city, region, address, latitude
     ('CITEC Higher Institute of Technology (CITEC)', 'UNIVERSITY',
      'Private higher institute in Yaoundé offering programmes in information technology, networking, software engineering and business management.',
      'Yaoundé', 'Centre', 'Nsam, Yaoundé', 3.8350, 11.5160, 600000, 'XAF',
+     NULL, NULL, NULL, NULL),
+
+    ('National Advanced School of Engineering (ENSPY)', 'UNIVERSITY',
+     'Public grande école of engineering (Polytechnique) under the University of Yaoundé I — trains engineers in civil, computer, electrical and telecommunications engineering.',
+     'Yaoundé', 'Centre', 'Melen, Yaoundé', 3.8620, 11.4940, 50000, 'XAF',
+     NULL, NULL, NULL, NULL),
+
+    ('National School of Administration and Magistracy (ENAM)', 'UNIVERSITY',
+     'Public professional school training senior civil servants and magistrates in administration, magistracy, customs and treasury.',
+     'Yaoundé', 'Centre', 'Quartier du Lac, Yaoundé', 3.8700, 11.5100, 50000, 'XAF',
+     NULL, NULL, NULL, NULL),
+
+    ('Sub-regional Institute of Statistics and Applied Economics (ISSEA)', 'UNIVERSITY',
+     'CEMAC sub-regional institute training statisticians, statistical engineers and applied economists for Central Africa.',
+     'Yaoundé', 'Centre', 'Nkolbisson, Yaoundé', 3.8740, 11.4350, 50000, 'XAF',
      NULL, NULL, NULL, NULL);
 
 -- Programs (linked by university name)
@@ -109,6 +124,57 @@ INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'HND Software Engineering', 'Diploma', 24, 600000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
 INSERT INTO program (school_id, name, level, duration_months, tuition_fee)
 SELECT id, 'BSc Network & Security', 'Bachelor', 36, 650000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
+
+-- University of Yaoundé I (additional programmes)
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Mathematics', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé I';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Physics', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé I';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'LLB Law', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé I';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BA English Modern Letters', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé I';
+-- University of Yaoundé II
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Management', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé II';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Political Science', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé II';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc International Relations', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé II';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Accounting & Finance', 'Bachelor', 36, 50000 FROM school WHERE name = 'University of Yaoundé II';
+-- Catholic University of Central Africa (UCAC)
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'LLB Law', 'Bachelor', 36, 900000 FROM school WHERE name = 'Catholic University of Central Africa (UCAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Accounting', 'Bachelor', 36, 900000 FROM school WHERE name = 'Catholic University of Central Africa (UCAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Social & Political Sciences', 'Bachelor', 36, 900000 FROM school WHERE name = 'Catholic University of Central Africa (UCAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Doctor of Medicine', 'Doctorate', 84, 1200000 FROM school WHERE name = 'Catholic University of Central Africa (UCAC)';
+-- Protestant University of Central Africa (UPAC)
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BTh Theology', 'Bachelor', 36, 800000 FROM school WHERE name = 'Protestant University of Central Africa (UPAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Management', 'Bachelor', 36, 800000 FROM school WHERE name = 'Protestant University of Central Africa (UPAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Nursing', 'Bachelor', 36, 850000 FROM school WHERE name = 'Protestant University of Central Africa (UPAC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Computer Science', 'Bachelor', 36, 800000 FROM school WHERE name = 'Protestant University of Central Africa (UPAC)';
+-- The ICT University
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Information Technology', 'Bachelor', 36, 750000 FROM school WHERE name = 'The ICT University';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Cybersecurity', 'Bachelor', 36, 800000 FROM school WHERE name = 'The ICT University';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Business Administration', 'Bachelor', 36, 700000 FROM school WHERE name = 'The ICT University';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'MSc Information Systems', 'Master', 24, 1000000 FROM school WHERE name = 'The ICT University';
+-- PKFokam Institute of Excellence
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Computer Science', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Accounting', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BBA Business Administration', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Marketing', 'Bachelor', 36, 700000 FROM school WHERE name = 'PKFokam Institute of Excellence';
+-- CITEC Higher Institute of Technology
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'HND Computer Graphics & Web Design', 'Diploma', 24, 550000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc Information Systems', 'Bachelor', 36, 650000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'HND Database Management', 'Diploma', 24, 550000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BSc E-commerce & Digital Marketing', 'Bachelor', 36, 600000 FROM school WHERE name = 'CITEC Higher Institute of Technology (CITEC)';
+-- National Advanced School of Engineering (ENSPY)
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BEng Civil Engineering', 'Bachelor', 60, 50000 FROM school WHERE name = 'National Advanced School of Engineering (ENSPY)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BEng Computer Engineering', 'Bachelor', 60, 50000 FROM school WHERE name = 'National Advanced School of Engineering (ENSPY)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BEng Electrical Engineering', 'Bachelor', 60, 50000 FROM school WHERE name = 'National Advanced School of Engineering (ENSPY)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'BEng Telecommunications Engineering', 'Bachelor', 60, 50000 FROM school WHERE name = 'National Advanced School of Engineering (ENSPY)';
+-- National School of Administration and Magistracy (ENAM)
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Public Administration', 'Master', 24, 50000 FROM school WHERE name = 'National School of Administration and Magistracy (ENAM)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Magistracy', 'Master', 24, 50000 FROM school WHERE name = 'National School of Administration and Magistracy (ENAM)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Customs Administration', 'Diploma', 24, 50000 FROM school WHERE name = 'National School of Administration and Magistracy (ENAM)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Treasury & Finance', 'Diploma', 24, 50000 FROM school WHERE name = 'National School of Administration and Magistracy (ENAM)';
+-- Sub-regional Institute of Statistics and Applied Economics (ISSEA)
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Statistical Engineering', 'Master', 60, 50000 FROM school WHERE name = 'Sub-regional Institute of Statistics and Applied Economics (ISSEA)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Applied Statistics', 'Bachelor', 36, 50000 FROM school WHERE name = 'Sub-regional Institute of Statistics and Applied Economics (ISSEA)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Demography', 'Master', 24, 50000 FROM school WHERE name = 'Sub-regional Institute of Statistics and Applied Economics (ISSEA)';
+INSERT INTO program (school_id, name, level, duration_months, tuition_fee) SELECT id, 'Economic Analysis', 'Bachelor', 36, 50000 FROM school WHERE name = 'Sub-regional Institute of Statistics and Applied Economics (ISSEA)';
 
 -- A few approved reviews so ratings are populated
 INSERT INTO review (school_id, user_id, rating, comment, status)

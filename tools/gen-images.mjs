@@ -27,7 +27,33 @@ const FIELDS = [
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-const svg = (f) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="${esc(f.label)}">
+// A range of brown skin tones so the illustrated graduates vary (Cameroonian / Black African).
+const SKINS = ['#8d5524', '#7a4b2b', '#a3683f', '#5c3a21', '#9c6b3f'];
+
+// A Cameroonian graduate (cap, gown, brown skin) — drawn in vector so it always renders locally.
+const graduate = (skin, stole) => `
+  <g transform="translate(320,196)">
+    <!-- gown -->
+    <path d="M-66 108 L-30 0 L30 0 L66 108 Z" fill="#1f2733"/>
+    <!-- stole (school colour) -->
+    <path d="M-18 2 L-8 104 L0 104 L-8 2 Z" fill="${stole}"/>
+    <path d="M18 2 L8 104 L0 104 L8 2 Z" fill="${stole}"/>
+    <!-- neck -->
+    <rect x="-9" y="-22" width="18" height="26" fill="${skin}"/>
+    <!-- head -->
+    <circle cx="0" cy="-46" r="31" fill="${skin}"/>
+    <circle cx="-30" cy="-46" r="5" fill="${skin}"/>
+    <circle cx="30" cy="-46" r="5" fill="${skin}"/>
+    <!-- hair -->
+    <path d="M-31 -54 Q0 -86 31 -54 Q31 -74 0 -78 Q-31 -74 -31 -54 Z" fill="#241a12"/>
+    <!-- mortarboard -->
+    <polygon points="0,-92 48,-74 0,-56 -48,-74" fill="#10151c"/>
+    <circle cx="0" cy="-74" r="4" fill="#fcd116"/>
+    <path d="M0 -74 L44 -74 L44 -44" stroke="#fcd116" stroke-width="2.5" fill="none"/>
+    <circle cx="44" cy="-40" r="5" fill="#fcd116"/>
+  </g>`;
+
+const svg = (f, i) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-label="${esc(f.label)} — Cameroonian graduate">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="${f.c[0]}"/>
@@ -36,16 +62,17 @@ const svg = (f) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="
   </defs>
   <rect width="640" height="360" fill="url(#g)"/>
   <!-- academic building watermark -->
-  <g fill="#ffffff" opacity="0.13" transform="translate(320,120)">
-    <polygon points="-120,42 0,-28 120,42"/>
-    <rect x="-112" y="42" width="224" height="14"/>
-    <rect x="-100" y="62" width="18" height="120"/>
-    <rect x="-62" y="62" width="18" height="120"/>
-    <rect x="-24" y="62" width="18" height="120"/>
-    <rect x="14" y="62" width="18" height="120"/>
-    <rect x="52" y="62" width="18" height="120"/>
-    <rect x="90" y="62" width="18" height="120"/>
-    <rect x="-114" y="184" width="228" height="16"/>
+  <g fill="#ffffff" opacity="0.10" transform="translate(320,118)">
+    <polygon points="-150,40 0,-26 150,40"/>
+    <rect x="-140" y="40" width="280" height="12"/>
+    <rect x="-150" y="190" width="300" height="14"/>
+  </g>
+  ${graduate(SKINS[i % SKINS.length], f.c[0])}
+  <!-- field icon badge -->
+  <g transform="translate(486,250)">
+    <circle cx="0" cy="0" r="40" fill="#ffffff"/>
+    <circle cx="0" cy="0" r="40" fill="none" stroke="${f.c[1]}" stroke-width="3"/>
+    <text x="0" y="2" font-size="42" text-anchor="middle" dominant-baseline="central">${f.emoji}</text>
   </g>
   <!-- Cameroon flag accent -->
   <g transform="translate(22,22)">
@@ -54,16 +81,16 @@ const svg = (f) => `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="
     <rect x="44" y="0" width="22" height="46" fill="#fcd116"/>
     <text x="33" y="30" font-size="20" text-anchor="middle" fill="#fcd116">★</text>
   </g>
-  <!-- field icon -->
-  <text x="320" y="172" font-size="104" text-anchor="middle" dominant-baseline="central">${f.emoji}</text>
-  <!-- field label -->
-  <text x="320" y="318" font-size="30" font-family="Segoe UI, Roboto, Arial, sans-serif" font-weight="700" text-anchor="middle" fill="#ffffff">${esc(f.label)}</text>
+  <!-- label strip -->
+  <rect x="0" y="306" width="640" height="54" fill="#000000" opacity="0.32"/>
+  <text x="320" y="340" font-size="28" font-family="Segoe UI, Roboto, Arial, sans-serif" font-weight="700" text-anchor="middle" fill="#ffffff">${esc(f.label)}</text>
 </svg>
 `;
 
 await mkdir(OUT, { recursive: true });
+let i = 0;
 for (const f of FIELDS) {
-  await writeFile(path.join(OUT, `${f.key}.svg`), svg(f), 'utf8');
+  await writeFile(path.join(OUT, `${f.key}.svg`), svg(f, i++), 'utf8');
   console.log('wrote', `web/images/${f.key}.svg`);
 }
 console.log('Done:', FIELDS.length, 'images');

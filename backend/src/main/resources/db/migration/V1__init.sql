@@ -15,6 +15,7 @@ CREATE TABLE school (
     name            VARCHAR(255) NOT NULL,
     category        VARCHAR(30)  NOT NULL,        -- PRIMARY | SECONDARY | HIGH_SCHOOL | VOCATIONAL | UNIVERSITY
     description     TEXT,
+    history         TEXT,
     city            VARCHAR(120),
     region          VARCHAR(120),
     address         VARCHAR(255),
@@ -38,6 +39,7 @@ CREATE TABLE program (
     id              BIGSERIAL PRIMARY KEY,
     school_id       BIGINT NOT NULL REFERENCES school(id) ON DELETE CASCADE,
     name            VARCHAR(255) NOT NULL,
+    faculty         VARCHAR(160),                -- the School/faculty within the institution
     level           VARCHAR(60),                 -- e.g. Bachelor, Diploma, A-Level
     duration_months INT,
     tuition_fee     NUMERIC(12,2)

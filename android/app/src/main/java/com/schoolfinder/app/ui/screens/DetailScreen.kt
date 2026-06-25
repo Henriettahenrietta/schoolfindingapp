@@ -143,6 +143,11 @@ fun DetailScreen(schoolId: Long, onBack: () -> Unit) {
                         Text(s.description, style = MaterialTheme.typography.bodyMedium)
                     }
 
+                    if (!s.history.isNullOrBlank()) {
+                        SectionTitle("History")
+                        Text(s.history, style = MaterialTheme.typography.bodyMedium)
+                    }
+
                     if (s.latitude != null && s.longitude != null) {
                         Spacer(Modifier.height(12.dp))
                         OutlinedButton(onClick = {
@@ -155,19 +160,28 @@ fun DetailScreen(schoolId: Long, onBack: () -> Unit) {
                     }
 
                     if (s.programs.isNotEmpty()) {
-                        SectionTitle("Programs")
-                        s.programs.forEach { p ->
-                            Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                                Column(Modifier.padding(12.dp)) {
-                                    Text(p.name, fontWeight = FontWeight.SemiBold)
-                                    Text(
-                                        listOfNotNull(
-                                            p.level,
-                                            p.durationMonths?.let { "$it months" },
-                                            p.tuitionFee?.let { formatMoney(it, s.currency) },
-                                        ).joinToString(" • "),
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
+                        SectionTitle("Programmes by School")
+                        s.programs.groupBy { it.faculty ?: "Programmes" }.forEach { (faculty, progs) ->
+                            Spacer(Modifier.height(10.dp))
+                            Text(
+                                faculty,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            progs.forEach { p ->
+                                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                    Column(Modifier.padding(12.dp)) {
+                                        Text(p.name, fontWeight = FontWeight.SemiBold)
+                                        Text(
+                                            listOfNotNull(
+                                                p.level,
+                                                p.durationMonths?.let { "$it months" },
+                                                p.tuitionFee?.let { formatMoney(it, s.currency) },
+                                            ).joinToString(" • "),
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
                                 }
                             }
                         }

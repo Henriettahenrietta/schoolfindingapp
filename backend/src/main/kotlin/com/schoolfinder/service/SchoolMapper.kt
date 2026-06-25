@@ -31,6 +31,7 @@ object SchoolMapper {
         name = s.name,
         category = s.category,
         description = s.description,
+        history = s.history,
         city = s.city,
         region = s.region,
         address = s.address,
@@ -45,7 +46,7 @@ object SchoolMapper {
         averageRating = rating.average,
         ratingCount = rating.count,
         favorite = isFavorite,
-        programs = s.programs.map { ProgramDto(it.id!!, it.name, it.level, it.durationMonths, it.tuitionFee) },
+        programs = s.programs.map { ProgramDto(it.id!!, it.name, it.faculty, it.level, it.durationMonths, it.tuitionFee) },
         images = s.images.map { ImageDto(it.id!!, it.url, it.caption) },
     )
 }

@@ -172,6 +172,25 @@ async function loadCompare() {
 }
 function clearCompare() { compareIds = []; saveCompare(); loadCompare(); if (currentView === 'discover') loadSchools(); }
 
+// Group a school's programmes by their School/faculty, preserving order.
+function renderPrograms(s) {
+  if (!s.programs.length) return '';
+  const order = [];
+  const byFac = new Map();
+  for (const p of s.programs) {
+    const key = p.faculty || 'Programmes';
+    if (!byFac.has(key)) { byFac.set(key, []); order.push(key); }
+    byFac.get(key).push(p);
+  }
+  let html = '<div class="section-title">Programmes by School</div>';
+  for (const fac of order) {
+    html += `<div class="faculty"><h4>${esc(fac)}</h4><ul class="prog-list">` +
+      byFac.get(fac).map((p) => `<li><span class="prog-name">${esc(p.name)}${p.level ? ' · ' + esc(p.level) : ''}${p.durationMonths ? ' · ' + p.durationMonths + ' mo' : ''}</span><span class="price">${fmtMoney(p.tuitionFee, s.currency)}</span></li>`).join('') +
+      '</ul></div>';
+  }
+  return html;
+}
+
 // ---------- detail modal ----------
 async function openDetail(id) {
   const modal = document.getElementById('modal');
@@ -195,7 +214,8 @@ async function openDetail(id) {
         ${s.email ? `<dt>Email</dt><dd>${esc(s.email)}</dd>` : ''}
         ${maps ? `<dt>Navigate</dt><dd><a class="link" href="${maps}" target="_blank">Open in Google Maps ↗</a></dd>` : ''}
       </dl>
-      ${s.programs.length ? `<div class="section-title">Programmes</div><ul>${s.programs.map((p) => `<li>${esc(p.name)}${p.level ? ' · ' + esc(p.level) : ''}${p.durationMonths ? ' · ' + p.durationMonths + ' mo' : ''} — ${fmtMoney(p.tuitionFee, s.currency)}</li>`).join('')}</ul>` : ''}
+      ${s.history ? `<div class="section-title">History</div><p>${esc(s.history)}</p>` : ''}
+      ${renderPrograms(s)}
       <div class="section-title">Reviews</div>
       <div id="reviewList">${reviewsPage.content.length ? reviewsPage.content.map(reviewHtml).join('') : '<p class="muted">No reviews yet.</p>'}</div>
       ${reviewFormHtml(id)}

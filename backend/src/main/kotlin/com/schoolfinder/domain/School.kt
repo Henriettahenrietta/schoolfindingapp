@@ -26,6 +26,9 @@ class School(
     @Column(columnDefinition = "text")
     var description: String? = null,
 
+    @Column(columnDefinition = "text")
+    var history: String? = null,
+
     @Column
     var city: String? = null,
 

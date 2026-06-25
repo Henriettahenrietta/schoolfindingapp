@@ -31,6 +31,7 @@ data class SchoolSummary(
 data class Program(
     val id: Long,
     val name: String,
+    val faculty: String?,
     val level: String?,
     val durationMonths: Int?,
     val tuitionFee: Double?,
@@ -43,6 +44,7 @@ data class SchoolDetail(
     val name: String,
     val category: String,
     val description: String?,
+    val history: String?,
     val city: String?,
     val region: String?,
     val address: String?,

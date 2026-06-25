@@ -21,6 +21,10 @@ class Program(
     @Column(nullable = false)
     var name: String,
 
+    /** The School / faculty this programme belongs to, e.g. "School of Business & Finance". */
+    @Column
+    var faculty: String? = null,
+
     @Column
     var level: String? = null,
 

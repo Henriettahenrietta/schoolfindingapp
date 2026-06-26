@@ -171,6 +171,7 @@ function cardHtml(s) {
     <span class="badge">${catLabel(s.category)}</span>
     <h3>${esc(s.name)}</h3>
     <div class="muted">📍 ${esc(s.city || '—')}${s.region ? ', ' + esc(s.region) : ''}</div>
+    ${userPos && s.latitude != null && s.longitude != null ? `<div class="muted dist">🧭 ${distanceKm(userPos, { lat: s.latitude, lng: s.longitude }).toFixed(1)} km away</div>` : ''}
     <div class="row">
       <span class="stars" title="${s.averageRating} / 5">${stars(s.averageRating)} <span class="muted">(${s.ratingCount})</span></span>
       <span class="price">${fmtMoney(s.tuitionFee, s.currency)}</span>
@@ -574,20 +575,75 @@ async function adminOpenConvo(studentId) {
   thread.innerHTML = '<p class="muted">Loading…</p>';
   try {
     const msgs = await api('/admin/messages/' + studentId);
-    thread.innerHTML = `
-      <div class="bubbles">${msgs.length ? msgs.map(bubbleHtml).join('') : '<p class="muted">No messages yet — send the first one.</p>'}</div>
-      <div class="msg-compose"><input id="adminMsgText" placeholder="Type a message…"><button class="btn primary" id="adminMsgSend">Send</button></div>`;
-    const send = async () => {
-      const t = document.getElementById('adminMsgText').value.trim();
-      if (!t) return;
-      try { await api('/admin/messages/' + studentId, { method: 'POST', body: JSON.stringify({ text: t }) }); adminOpenConvo(studentId); } catch (e) { toast(e.message); }
-    };
-    document.getElementById('adminMsgSend').onclick = send;
-    document.getElementById('adminMsgText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+    thread.innerHTML = chatHtml(msgs, 'ADMIN', 'admin', 'No messages yet — send the first one.');
+    wireChat('admin', async (payload) => {
+      try { await api('/admin/messages/' + studentId, { method: 'POST', body: JSON.stringify(payload) }); adminOpenConvo(studentId); } catch (e) { toast(e.message); }
+    });
   } catch (e) { thread.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
-function bubbleHtml(m) {
-  return `<div class="bubble ${m.sender === 'ADMIN' ? 'me' : 'them'}">${esc(m.text)}</div>`;
+// ---------- reusable chat widget (text + image + voice) ----------
+let chatCancelled = false;
+
+function msgBubbleHtml(m, mineSender) {
+  const mine = m.sender === mineSender;
+  let inner = '';
+  if (m.image) inner += `<img class="bub-img" src="${m.image}" alt="photo">`;
+  if (m.audio) inner += `<audio class="bub-audio" controls src="${m.audio}"></audio>`;
+  if (m.text) inner += `<div class="bub-text">${esc(m.text)}</div>`;
+  let time = '';
+  try { time = m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''; } catch (e) {}
+  return `<div class="bubble ${mine ? 'me' : 'them'}">${inner}<span class="bub-time">${time}</span></div>`;
+}
+
+function chatHtml(messages, mineSender, prefix, emptyText) {
+  return `
+    <div class="bubbles" id="${prefix}Bubbles">${messages.length ? messages.map((m) => msgBubbleHtml(m, mineSender)).join('') : `<p class="muted">${emptyText}</p>`}</div>
+    <div class="rec-bar hidden" id="${prefix}Rec"><span class="rec-dot"></span> Recording… <button class="btn" id="${prefix}Stop">Stop &amp; send</button> <button class="btn" id="${prefix}Cancel">Cancel</button></div>
+    <div class="msg-compose">
+      <button class="icon-btn" id="${prefix}Attach" title="Send a photo">📎</button>
+      <button class="icon-btn" id="${prefix}Mic" title="Record a voice message">🎤</button>
+      <input id="${prefix}Text" placeholder="Type a message…">
+      <button class="btn primary" id="${prefix}Send">Send</button>
+    </div>`;
+}
+
+function wireChat(prefix, send) {
+  const txt = document.getElementById(prefix + 'Text');
+  const bubbles = document.getElementById(prefix + 'Bubbles');
+  if (bubbles) bubbles.scrollTop = bubbles.scrollHeight;
+  const sendText = () => { const t = txt.value.trim(); if (!t) return; txt.value = ''; send({ text: t }); };
+  document.getElementById(prefix + 'Send').onclick = sendText;
+  txt.onkeydown = (e) => { if (e.key === 'Enter') sendText(); };
+  // Photo
+  document.getElementById(prefix + 'Attach').onclick = () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.onchange = () => { const f = inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => send({ image: r.result }); r.readAsDataURL(f); };
+    inp.click();
+  };
+  // Voice
+  const recBar = document.getElementById(prefix + 'Rec');
+  document.getElementById(prefix + 'Mic').onclick = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') { toast('Voice recording not supported on this browser'); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      const chunks = [];
+      chatCancelled = false;
+      rec.ondataavailable = (e) => chunks.push(e.data);
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        recBar.classList.add('hidden');
+        if (chatCancelled) { chatCancelled = false; return; }
+        const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+        const r = new FileReader(); r.onload = () => send({ audio: r.result }); r.readAsDataURL(blob);
+      };
+      recBar.classList.remove('hidden');
+      rec.start();
+      document.getElementById(prefix + 'Stop').onclick = () => rec.stop();
+      document.getElementById(prefix + 'Cancel').onclick = () => { chatCancelled = true; rec.stop(); };
+    } catch (e) { toast('Microphone permission blocked'); }
+  };
 }
 
 async function adminSchools(panel) {
@@ -721,7 +777,13 @@ let userPos = null;
 function ensureGeo() {
   if (userPos || !navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(
-    (pos) => { userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; if (currentView === 'student') loadStudent(); },
+    (pos) => {
+      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      // Refresh whatever's on screen so distances appear automatically.
+      if (currentView === 'student') loadStudent();
+      else if (currentView === 'discover') loadSchools();
+      else if (currentView === 'favorites') loadFavorites();
+    },
     () => {},
     { timeout: 8000 },
   );
@@ -764,17 +826,11 @@ async function loadStudent() {
       <div class="section-title">My reviews</div>
       ${myReviews.length ? myReviews.map(myReviewHtml).join('') : '<p class="muted">You haven\'t written any reviews yet.</p>'}
       <div class="section-title">Message the admin</div>
-      <div class="msg-card">
-        <div class="bubbles">${msgs.length ? msgs.map(bubbleStudentHtml).join('') : '<p class="muted">No messages yet. Say hello 👋</p>'}</div>
-        <div class="msg-compose"><input id="stuMsgText" placeholder="Type a message to the admin…"><button class="btn primary" id="stuMsgSend">Send</button></div>
-      </div>`;
-    const send = async () => {
-      const t = document.getElementById('stuMsgText').value.trim();
-      if (!t) return;
-      try { await api('/messages', { method: 'POST', body: JSON.stringify({ text: t }) }); loadStudent(); } catch (e) { toast(e.message); }
-    };
-    document.getElementById('stuMsgSend').onclick = send;
-    document.getElementById('stuMsgText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+      <div class="msg-card" id="stuChat"></div>`;
+    document.getElementById('stuChat').innerHTML = chatHtml(msgs, 'STUDENT', 'stu', 'No messages yet. Say hello 👋');
+    wireChat('stu', async (payload) => {
+      try { await api('/messages', { method: 'POST', body: JSON.stringify(payload) }); loadStudent(); } catch (e) { toast(e.message); }
+    });
   } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
 
@@ -804,4 +860,5 @@ document.getElementById('authModal').onclick = (e) => { if (e.target.id === 'aut
 renderIdentity();
 saveCompare();
 loadSchools();
+ensureGeo(); // ask for location up-front so distances show automatically
 fetch(API + '/visit', { method: 'POST' }).catch(() => {}); // record a daily visit

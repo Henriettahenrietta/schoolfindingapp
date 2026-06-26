@@ -516,8 +516,9 @@ const server = http.createServer(async (req, res) => {
     const me = currentUser(req);
     if (!me) return send(res, 401, { message: 'Authentication required' });
     const body = await readBody(req);
-    if (!body.text || !body.text.trim()) return send(res, 400, { message: 'text is required' });
-    const msg = { id: ++seq.message, studentId: me.id, sender: 'STUDENT', text: body.text.trim(), createdAt: new Date().toISOString() };
+    const text = (body.text || '').trim();
+    if (!text && !body.image && !body.audio) return send(res, 400, { message: 'empty message' });
+    const msg = { id: ++seq.message, studentId: me.id, sender: 'STUDENT', text: text || null, image: body.image || null, audio: body.audio || null, createdAt: new Date().toISOString() };
     messages.push(msg);
     return send(res, 201, msg);
   }
@@ -530,7 +531,8 @@ const server = http.createServer(async (req, res) => {
     const list = Object.entries(convos).map(([sid, msgs]) => {
       const u = users.find((x) => x.id === Number(sid));
       const last = msgs[msgs.length - 1];
-      return { studentId: Number(sid), studentName: (u && (u.displayName || u.email)) || ('User ' + sid), lastText: last.text, lastAt: last.createdAt, count: msgs.length };
+      const preview = last.text || (last.image ? '📷 Photo' : last.audio ? '🎤 Voice message' : '');
+      return { studentId: Number(sid), studentName: (u && (u.displayName || u.email)) || ('User ' + sid), lastText: preview, lastAt: last.createdAt, count: msgs.length };
     }).sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
     return send(res, 200, list);
   }
@@ -544,8 +546,9 @@ const server = http.createServer(async (req, res) => {
     if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
     const sid = parseInt(m[1], 10);
     const body = await readBody(req);
-    if (!body.text || !body.text.trim()) return send(res, 400, { message: 'text is required' });
-    const msg = { id: ++seq.message, studentId: sid, sender: 'ADMIN', text: body.text.trim(), createdAt: new Date().toISOString() };
+    const text = (body.text || '').trim();
+    if (!text && !body.image && !body.audio) return send(res, 400, { message: 'empty message' });
+    const msg = { id: ++seq.message, studentId: sid, sender: 'ADMIN', text: text || null, image: body.image || null, audio: body.audio || null, createdAt: new Date().toISOString() };
     messages.push(msg);
     return send(res, 201, msg);
   }

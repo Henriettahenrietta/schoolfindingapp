@@ -86,6 +86,7 @@ data class SchoolUpsertRequest(
     @field:NotBlank val name: String,
     val category: SchoolCategory,
     val description: String? = null,
+    val history: String? = null,
     val city: String? = null,
     val region: String? = null,
     val address: String? = null,

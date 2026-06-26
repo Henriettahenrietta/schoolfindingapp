@@ -76,6 +76,7 @@ class AdminService(
 
     private fun School.applyFrom(req: SchoolUpsertRequest) {
         description = req.description
+        history = req.history
         city = req.city
         region = req.region
         address = req.address

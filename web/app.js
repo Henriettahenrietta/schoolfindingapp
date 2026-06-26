@@ -10,10 +10,13 @@ function session() {
   try { return JSON.parse(localStorage.getItem('sf_session')); } catch { return null; }
 }
 function setSession(s) {
+  const wasAdmin = session()?.role === 'ADMIN';
   if (s) localStorage.setItem('sf_session', JSON.stringify(s));
   else localStorage.removeItem('sf_session');
   renderIdentity();
-  if (currentView === 'favorites') loadFavorites();
+  // Send admins straight to the dashboard on sign-in.
+  if (s && s.role === 'ADMIN' && !wasAdmin) showView('admin');
+  else if (currentView === 'favorites') loadFavorites();
 }
 
 // ---------- Firebase Auth (real, when configured) ----------
@@ -398,7 +401,7 @@ async function openDetail(id) {
       <h2>${esc(s.name)}</h2>
       <div class="stars">${stars(s.averageRating)} <span class="muted">${s.averageRating} · ${s.ratingCount} review(s)</span></div>
       ${renderGallery(s)}
-      ${session()?.role === 'ADMIN' ? uploadFormHtml() : ''}
+      ${session()?.role === 'ADMIN' ? `<div class="admin-actions"><button class="btn" onclick="adminEditSchool(${s.id})">✏️ Edit details</button> <button class="btn danger" onclick="adminDeleteSchool(${s.id})">🗑 Delete</button></div>${uploadFormHtml()}` : ''}
       <p>${esc(s.description || '')}</p>
       <dl class="kv">
         <dt>Location</dt><dd>${esc(s.address || s.city || '—')}${s.region ? ', ' + esc(s.region) : ''}</dd>
@@ -480,7 +483,7 @@ async function adminAnalytics(panel) {
 async function adminSchools(panel) {
   try {
     const pg = await api('/schools?category=UNIVERSITY&size=100&sort=name');
-    const rows = pg.content.map((s) => `<tr><td>${s.id}</td><td>${esc(s.name)}</td><td>${esc(s.city || '')}</td><td>${fmtMoney(s.tuitionFee, s.currency)}</td><td><button class="btn" onclick="openDetail(${s.id})">View</button> <button class="btn danger" onclick="adminDeleteSchool(${s.id})">Delete</button></td></tr>`).join('');
+    const rows = pg.content.map((s) => `<tr><td>${s.id}</td><td>${esc(s.name)}</td><td>${esc(s.city || '')}</td><td>${fmtMoney(s.tuitionFee, s.currency)}</td><td><button class="btn" onclick="openDetail(${s.id})">View</button> <button class="btn" onclick="adminEditSchool(${s.id})">Edit</button> <button class="btn danger" onclick="adminDeleteSchool(${s.id})">Delete</button></td></tr>`).join('');
     panel.innerHTML = `
       <div class="section-title">Add university</div>
       <div class="adminform">
@@ -511,7 +514,65 @@ async function adminSchools(panel) {
 }
 async function adminDeleteSchool(id) {
   if (!confirm('Delete this university and its programmes/reviews?')) return;
-  try { await api('/admin/schools/' + id, { method: 'DELETE' }); toast('Deleted'); loadAdmin(); } catch (e) { toast(e.message); }
+  try {
+    await api('/admin/schools/' + id, { method: 'DELETE' });
+    toast('Deleted');
+    closeModal();
+    if (currentView === 'admin') loadAdmin();
+    if (currentView === 'discover') loadSchools();
+  } catch (e) { toast(e.message); }
+}
+
+// Edit any school's details (admin) — opens a form in the modal.
+async function adminEditSchool(id) {
+  const modal = document.getElementById('modal');
+  const body = document.getElementById('modalBody');
+  body.innerHTML = '<p class="muted">Loading…</p>';
+  modal.classList.remove('hidden');
+  try {
+    const s = await api('/schools/' + id);
+    const cats = ['UNIVERSITY', 'HIGH_SCHOOL', 'SECONDARY', 'VOCATIONAL', 'PRIMARY'];
+    body.innerHTML = `
+      <h2>Edit details</h2>
+      <div class="editform">
+        <label>Name<input id="e_name" value="${esc(s.name)}"></label>
+        <label>Category<select id="e_category">${cats.map((c) => `<option ${s.category === c ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
+        <label>City<input id="e_city" value="${esc(s.city || '')}"></label>
+        <label>Region<input id="e_region" value="${esc(s.region || '')}"></label>
+        <label>Address<input id="e_address" value="${esc(s.address || '')}"></label>
+        <label>Tuition (FCFA)<input id="e_tuition" type="number" value="${s.tuitionFee ?? ''}"></label>
+        <label>Website<input id="e_website" value="${esc(s.website || '')}"></label>
+        <label>Phone<input id="e_phone" value="${esc(s.phone || '')}"></label>
+        <label>Email<input id="e_email" value="${esc(s.email || '')}"></label>
+        <label>Description<textarea id="e_desc" rows="3">${esc(s.description || '')}</textarea></label>
+        <label>History<textarea id="e_history" rows="3">${esc(s.history || '')}</textarea></label>
+        <button class="btn primary" id="e_save">Save changes</button>
+      </div>`;
+    const val = (id2) => document.getElementById(id2).value.trim();
+    document.getElementById('e_save').onclick = async () => {
+      const name = val('e_name');
+      if (!name) { toast('Name is required'); return; }
+      try {
+        await api('/admin/schools/' + id, { method: 'PUT', body: JSON.stringify({
+          name,
+          category: document.getElementById('e_category').value,
+          city: val('e_city') || null,
+          region: val('e_region') || null,
+          address: val('e_address') || null,
+          tuitionFee: Number(document.getElementById('e_tuition').value) || null,
+          website: val('e_website') || null,
+          phone: val('e_phone') || null,
+          email: val('e_email') || null,
+          description: val('e_desc') || null,
+          history: val('e_history') || null,
+        }) });
+        toast('Saved ✓');
+        closeModal();
+        if (currentView === 'admin') loadAdmin();
+        if (currentView === 'discover') loadSchools();
+      } catch (e) { toast(e.message); }
+    };
+  } catch (e) { body.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
 
 async function adminUsers(panel) {

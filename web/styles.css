@@ -37,6 +37,7 @@ body {
   font-size: 13px; padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer;
 }
 .identity .who { background: rgba(255,255,255,.18); padding: 6px 10px; border-radius: 8px; }
+.identity .fbi { padding: 6px 9px; border: none; border-radius: 8px; font-size: 13px; width: 130px; }
 
 .tabs { display: flex; gap: 4px; padding: 10px 22px 0; background: var(--bg); position: sticky; top: 0; z-index: 5; }
 .tab {

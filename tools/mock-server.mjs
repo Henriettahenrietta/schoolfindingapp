@@ -234,13 +234,31 @@ function reviewDto(r) {
   return { id: r.id, schoolId: r.schoolId, schoolName: s ? s.name : null, userDisplayName: u ? (u.displayName || u.email) : null, rating: r.rating, comment: r.comment, status: r.status, createdAt: r.createdAt };
 }
 
-// Resolve (and lazily create) the caller from the X-Debug-Uid header. Returns null for guests.
+// DEV-ONLY: decode a Firebase ID token payload WITHOUT verifying its signature, to read uid/email.
+// The real Spring backend (FirebaseTokenFilter) verifies tokens properly; this stand-in just lets
+// the web app's real Firebase sign-in work locally without the firebase-admin dependency.
+function decodeJwt(token) {
+  try {
+    const part = token.split('.')[1];
+    const json = Buffer.from(part.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+    return JSON.parse(json);
+  } catch { return null; }
+}
+
+// Resolve (and lazily create) the caller from either a Firebase Bearer token or X-Debug-* headers.
 function currentUser(req) {
-  const uid = req.headers['x-debug-uid'];
+  const debugUid = req.headers['x-debug-uid'];
+  const auth = req.headers['authorization'];
+  const claims = (!debugUid && auth && auth.startsWith('Bearer ')) ? decodeJwt(auth.slice(7)) : null;
+  const uid = debugUid || claims?.user_id || claims?.sub;
   if (!uid) return null;
   let u = users.find((x) => x.firebaseUid === uid);
   if (!u) {
-    u = { id: ++seq.user, firebaseUid: uid, email: req.headers['x-debug-email'] || null, displayName: req.headers['x-debug-name'] || uid, role: (req.headers['x-debug-role'] || 'STUDENT').toUpperCase(), active: true, createdAt: new Date().toISOString() };
+    const email = req.headers['x-debug-email'] || claims?.email || null;
+    const name = req.headers['x-debug-name'] || claims?.name || email || uid;
+    const adminEmails = (process.env.ADMIN_EMAILS || 'admin@unimatch.cm').split(',').map((s) => s.trim());
+    const role = (req.headers['x-debug-role'] || (email && adminEmails.includes(email) ? 'ADMIN' : 'STUDENT')).toUpperCase();
+    u = { id: ++seq.user, firebaseUid: uid, email, displayName: name, role, active: true, createdAt: new Date().toISOString() };
     users.push(u);
   }
   return u;

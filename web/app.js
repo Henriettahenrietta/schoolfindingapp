@@ -16,14 +16,36 @@ function setSession(s) {
   if (currentView === 'favorites') loadFavorites();
 }
 
+// ---------- Firebase Auth (real, when configured) ----------
+const FB_ENABLED = () => typeof firebase !== 'undefined' && !!window.FIREBASE_CONFIG && !!window.FIREBASE_CONFIG.apiKey;
+
+if (FB_ENABLED()) {
+  firebase.initializeApp(window.FIREBASE_CONFIG);
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        const me = await api('/me');
+        setSession({ uid: me.firebaseUid, name: me.displayName || user.email, role: me.role });
+      } catch (e) { /* backend unreachable */ }
+    } else {
+      localStorage.removeItem('sf_session');
+      renderIdentity();
+    }
+  });
+}
+
 // ---------- API helper ----------
 async function api(path, opts = {}) {
-  const s = session();
   const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
-  if (s) {
-    headers['X-Debug-Uid'] = s.uid;
-    headers['X-Debug-Name'] = s.name;
-    headers['X-Debug-Role'] = s.role;
+  if (FB_ENABLED() && firebase.auth().currentUser) {
+    headers['Authorization'] = 'Bearer ' + (await firebase.auth().currentUser.getIdToken());
+  } else {
+    const s = session();
+    if (s) {
+      headers['X-Debug-Uid'] = s.uid;
+      headers['X-Debug-Name'] = s.name;
+      headers['X-Debug-Role'] = s.role;
+    }
   }
   const res = await fetch(API + path, Object.assign({}, opts, { headers }));
   if (res.status === 204 || res.status === 201) return null;
@@ -67,7 +89,15 @@ function renderIdentity() {
   const el = document.getElementById('identity');
   if (s) {
     el.innerHTML = `<span class="who">👤 ${esc(s.name)} · ${esc(s.role)}</span><button id="signout">Sign out</button>`;
-    document.getElementById('signout').onclick = () => setSession(null);
+    document.getElementById('signout').onclick = doSignOut;
+  } else if (FB_ENABLED()) {
+    el.innerHTML = `
+      <input id="fbEmail" type="email" placeholder="email" class="fbi">
+      <input id="fbPass" type="password" placeholder="password" class="fbi">
+      <button id="fbIn">Sign in</button>
+      <button id="fbUp">Register</button>`;
+    document.getElementById('fbIn').onclick = () => fbAuth(false);
+    document.getElementById('fbUp').onclick = () => fbAuth(true);
   } else {
     el.innerHTML = `
       <span>Browsing as guest ·</span>
@@ -78,6 +108,22 @@ function renderIdentity() {
   const admin = session()?.role === 'ADMIN';
   document.querySelectorAll('.admin-only').forEach((t) => { t.style.display = admin ? '' : 'none'; });
   if (!admin && currentView === 'admin') showView('discover');
+}
+
+async function fbAuth(register) {
+  const email = document.getElementById('fbEmail').value.trim();
+  const pass = document.getElementById('fbPass').value;
+  if (!email || !pass) { toast('Enter email and password'); return; }
+  try {
+    if (register) await firebase.auth().createUserWithEmailAndPassword(email, pass);
+    else await firebase.auth().signInWithEmailAndPassword(email, pass);
+    // onAuthStateChanged sets the session and updates the UI.
+  } catch (e) { toast(e.message); }
+}
+
+function doSignOut() {
+  if (FB_ENABLED() && firebase.auth().currentUser) firebase.auth().signOut();
+  else setSession(null);
 }
 
 // ---------- school card ----------

@@ -75,6 +75,9 @@ function renderIdentity() {
       <button data-as="admin">Sign in as admin</button>`;
     el.querySelectorAll('button').forEach((b) => (b.onclick = () => setSession(PRESETS[b.dataset.as])));
   }
+  const admin = session()?.role === 'ADMIN';
+  document.querySelectorAll('.admin-only').forEach((t) => { t.style.display = admin ? '' : 'none'; });
+  if (!admin && currentView === 'admin') showView('discover');
 }
 
 // ---------- school card ----------
@@ -373,6 +376,97 @@ function wireReviewForm(id) {
   };
 }
 
+// ---------- admin dashboard ----------
+let adminSub = 'analytics';
+
+function loadAdmin() {
+  document.querySelectorAll('.asub').forEach((b) => b.classList.toggle('active', b.dataset.asub === adminSub));
+  const panel = document.getElementById('adminPanel');
+  panel.innerHTML = '<p class="muted">Loading…</p>';
+  ({ analytics: adminAnalytics, schools: adminSchools, users: adminUsers, reviews: adminReviews }[adminSub] || adminAnalytics)(panel);
+}
+
+async function adminAnalytics(panel) {
+  try {
+    const a = await api('/admin/analytics');
+    panel.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-n">${a.totalSchools}</div><div class="stat-l">Universities</div></div>
+        <div class="stat"><div class="stat-n">${a.totalUsers}</div><div class="stat-l">Users</div></div>
+        <div class="stat"><div class="stat-n">${a.totalReviews}</div><div class="stat-l">Reviews</div></div>
+      </div>
+      <div class="section-title">Universities by category</div>
+      <ul>${Object.entries(a.schoolsByCategory).map(([k, v]) => `<li>${esc(k)}: <b>${v}</b></li>`).join('')}</ul>`;
+  } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+
+async function adminSchools(panel) {
+  try {
+    const pg = await api('/schools?category=UNIVERSITY&size=100&sort=name');
+    const rows = pg.content.map((s) => `<tr><td>${s.id}</td><td>${esc(s.name)}</td><td>${esc(s.city || '')}</td><td>${fmtMoney(s.tuitionFee, s.currency)}</td><td><button class="btn" onclick="openDetail(${s.id})">View</button> <button class="btn danger" onclick="adminDeleteSchool(${s.id})">Delete</button></td></tr>`).join('');
+    panel.innerHTML = `
+      <div class="section-title">Add university</div>
+      <div class="adminform">
+        <input id="ns_name" placeholder="Name *">
+        <input id="ns_city" placeholder="City" value="Yaoundé">
+        <input id="ns_tuition" type="number" placeholder="Tuition (FCFA)">
+        <input id="ns_desc" placeholder="Description">
+        <button class="btn primary" id="ns_add">Add</button>
+      </div>
+      <div class="section-title">Universities (${pg.totalElements})</div>
+      <div class="tablewrap"><table class="atable"><tr><th>ID</th><th>Name</th><th>City</th><th>Tuition</th><th></th></tr>${rows}</table></div>`;
+    document.getElementById('ns_add').onclick = async () => {
+      const name = document.getElementById('ns_name').value.trim();
+      if (!name) { toast('Name required'); return; }
+      try {
+        await api('/admin/schools', { method: 'POST', body: JSON.stringify({
+          name,
+          category: 'UNIVERSITY',
+          city: document.getElementById('ns_city').value.trim() || 'Yaoundé',
+          tuitionFee: Number(document.getElementById('ns_tuition').value) || null,
+          description: document.getElementById('ns_desc').value.trim() || null,
+        }) });
+        toast('University added');
+        loadAdmin();
+      } catch (e) { toast(e.message); }
+    };
+  } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+async function adminDeleteSchool(id) {
+  if (!confirm('Delete this university and its programmes/reviews?')) return;
+  try { await api('/admin/schools/' + id, { method: 'DELETE' }); toast('Deleted'); loadAdmin(); } catch (e) { toast(e.message); }
+}
+
+async function adminUsers(panel) {
+  try {
+    const list = await api('/admin/users');
+    const rows = list.map((u) => `<tr><td>${u.id}</td><td>${esc(u.displayName || '')}</td><td>${esc(u.email || '')}</td><td>${u.role}</td><td>${u.active ? '✅' : '🚫'}</td><td>
+      <button class="btn" onclick="adminSetRole(${u.id},'${u.role === 'ADMIN' ? 'STUDENT' : 'ADMIN'}')">${u.role === 'ADMIN' ? 'Make student' : 'Make admin'}</button>
+      <button class="btn" onclick="adminSetActive(${u.id},${!u.active})">${u.active ? 'Deactivate' : 'Activate'}</button></td></tr>`).join('');
+    panel.innerHTML = `<div class="section-title">Users (${list.length})</div><div class="tablewrap"><table class="atable"><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Active</th><th></th></tr>${rows}</table></div>`;
+  } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+async function adminSetRole(id, role) { try { await api(`/admin/users/${id}/role?role=${role}`, { method: 'PUT' }); toast('Role updated'); loadAdmin(); } catch (e) { toast(e.message); } }
+async function adminSetActive(id, active) { try { await api(`/admin/users/${id}/active?active=${active}`, { method: 'PUT' }); toast('Updated'); loadAdmin(); } catch (e) { toast(e.message); } }
+
+async function adminReviews(panel) {
+  try {
+    const pg = await api('/admin/reviews/pending');
+    if (!pg.content.length) { panel.innerHTML = '<div class="empty">No pending reviews 🎉</div>'; return; }
+    panel.innerHTML = `<div class="section-title">Pending reviews (${pg.totalElements})</div>` + pg.content.map((r) => `
+      <div class="review">
+        <div class="stars">${stars(r.rating)}</div>
+        <div>${esc(r.comment || '')}</div>
+        <div class="meta">${esc(r.schoolName || '')} — ${esc(r.userDisplayName || 'Anonymous')}</div>
+        <div style="margin-top:6px">
+          <button class="btn primary" onclick="adminModerate(${r.id},'APPROVED')">Approve</button>
+          <button class="btn danger" onclick="adminModerate(${r.id},'REJECTED')">Reject</button>
+        </div>
+      </div>`).join('');
+  } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+async function adminModerate(id, status) { try { await api(`/admin/reviews/${id}/status?status=${status}`, { method: 'PUT' }); toast('Review ' + status.toLowerCase()); loadAdmin(); } catch (e) { toast(e.message); } }
+
 // ---------- view switching ----------
 let currentView = 'discover';
 function showView(v) {
@@ -382,10 +476,12 @@ function showView(v) {
   if (v === 'discover') loadSchools();
   if (v === 'compare') loadCompare();
   if (v === 'favorites') loadFavorites();
+  if (v === 'admin') loadAdmin();
 }
 
 // ---------- init ----------
 document.querySelectorAll('.tab').forEach((t) => (t.onclick = () => showView(t.dataset.view)));
+document.querySelectorAll('.asub').forEach((b) => (b.onclick = () => { adminSub = b.dataset.asub; loadAdmin(); }));
 document.getElementById('searchForm').onsubmit = (e) => { e.preventDefault(); loadSchools(); };
 function closeModal() { clearInterval(carTimer); document.getElementById('modal').classList.add('hidden'); }
 document.getElementById('modalClose').onclick = closeModal;

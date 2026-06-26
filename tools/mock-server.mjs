@@ -182,10 +182,10 @@ const programs = [
 ];
 
 const users = [
-  { id: 1, firebaseUid: 'admin-dev', email: 'admin@unimatch.cm', displayName: 'Platform Admin', role: 'ADMIN' },
-  { id: 2, firebaseUid: 'student-1', email: 'ada@example.cm', displayName: 'Ada N.', role: 'STUDENT' },
-  { id: 3, firebaseUid: 'student-2', email: 'bih@example.cm', displayName: 'Bih T.', role: 'STUDENT' },
-  { id: 4, firebaseUid: 'student-3', email: 'che@example.cm', displayName: 'Che M.', role: 'STUDENT' },
+  { id: 1, firebaseUid: 'admin-dev', email: 'admin@unimatch.cm', displayName: 'Platform Admin', role: 'ADMIN', active: true, createdAt: NOW },
+  { id: 2, firebaseUid: 'student-1', email: 'ada@example.cm', displayName: 'Ada N.', role: 'STUDENT', active: true, createdAt: NOW },
+  { id: 3, firebaseUid: 'student-2', email: 'bih@example.cm', displayName: 'Bih T.', role: 'STUDENT', active: true, createdAt: NOW },
+  { id: 4, firebaseUid: 'student-3', email: 'che@example.cm', displayName: 'Che M.', role: 'STUDENT', active: true, createdAt: NOW },
 ];
 
 let reviews = [
@@ -193,6 +193,8 @@ let reviews = [
   { id: 2, schoolId: 1, userId: 3, rating: 4, comment: 'Strong programmes but large class sizes.', status: 'APPROVED', createdAt: NOW },
   { id: 3, schoolId: 5, userId: 2, rating: 4, comment: 'Good for tech, modern facilities.', status: 'APPROVED', createdAt: NOW },
   { id: 4, schoolId: 3, userId: 4, rating: 5, comment: 'Excellent reputation and strong discipline.', status: 'APPROVED', createdAt: NOW },
+  { id: 5, schoolId: 2, userId: 3, rating: 3, comment: 'Pending review — awaiting moderation.', status: 'PENDING', createdAt: NOW },
+  { id: 6, schoolId: 6, userId: 4, rating: 2, comment: 'Pending review — facilities could improve.', status: 'PENDING', createdAt: NOW },
 ];
 
 let favorites = []; // { userId, schoolId }
@@ -238,10 +240,16 @@ function currentUser(req) {
   if (!uid) return null;
   let u = users.find((x) => x.firebaseUid === uid);
   if (!u) {
-    u = { id: ++seq.user, firebaseUid: uid, email: req.headers['x-debug-email'] || null, displayName: req.headers['x-debug-name'] || uid, role: (req.headers['x-debug-role'] || 'STUDENT').toUpperCase() };
+    u = { id: ++seq.user, firebaseUid: uid, email: req.headers['x-debug-email'] || null, displayName: req.headers['x-debug-name'] || uid, role: (req.headers['x-debug-role'] || 'STUDENT').toUpperCase(), active: true, createdAt: new Date().toISOString() };
     users.push(u);
   }
   return u;
+}
+
+const isAdmin = (req) => { const u = currentUser(req); return !!u && u.role === 'ADMIN'; };
+
+function userDto(u) {
+  return { id: u.id, email: u.email, displayName: u.displayName, role: u.role, active: u.active !== false, createdAt: u.createdAt || NOW };
 }
 
 function page(content, pageNum, size) {
@@ -420,10 +428,93 @@ const server = http.createServer(async (req, res) => {
   }
   m = path.match(/^\/api\/v1\/admin\/schools\/images\/(\d+)$/);
   if (m && method === 'DELETE') {
-    const me = currentUser(req);
-    if (!me || me.role !== 'ADMIN') return send(res, 403, { message: 'Admin access required' });
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
     const imgId = parseInt(m[1], 10);
     for (const k of Object.keys(uploadedImages)) uploadedImages[k] = uploadedImages[k].filter((x) => x.id !== imgId);
+    return send(res, 204);
+  }
+
+  // ----- Admin: analytics -----
+  if (path === '/api/v1/admin/analytics' && method === 'GET') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const byCat = {};
+    schools.forEach((s) => { byCat[s.category] = (byCat[s.category] || 0) + 1; });
+    return send(res, 200, { totalSchools: schools.length, totalUsers: users.length, totalReviews: reviews.length, schoolsByCategory: byCat });
+  }
+
+  // ----- Admin: users -----
+  if (path === '/api/v1/admin/users' && method === 'GET') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    return send(res, 200, users.map(userDto));
+  }
+  m = path.match(/^\/api\/v1\/admin\/users\/(\d+)\/active$/);
+  if (m && method === 'PUT') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const u = users.find((x) => x.id === parseInt(m[1], 10));
+    if (!u) return send(res, 404, { message: 'User not found' });
+    u.active = q.get('active') === 'true';
+    return send(res, 200, userDto(u));
+  }
+  m = path.match(/^\/api\/v1\/admin\/users\/(\d+)\/role$/);
+  if (m && method === 'PUT') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const u = users.find((x) => x.id === parseInt(m[1], 10));
+    if (!u) return send(res, 404, { message: 'User not found' });
+    const role = (q.get('role') || '').toUpperCase();
+    if (!['STUDENT', 'ADMIN'].includes(role)) return send(res, 400, { message: 'Invalid role' });
+    u.role = role;
+    return send(res, 200, userDto(u));
+  }
+
+  // ----- Admin: review moderation -----
+  if (path === '/api/v1/admin/reviews/pending' && method === 'GET') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const pending = reviews.filter((r) => r.status === 'PENDING').sort((a, b) => b.id - a.id);
+    return send(res, 200, page(pending.map(reviewDto), 0, 100));
+  }
+  m = path.match(/^\/api\/v1\/admin\/reviews\/(\d+)\/status$/);
+  if (m && method === 'PUT') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const r = reviews.find((x) => x.id === parseInt(m[1], 10));
+    if (!r) return send(res, 404, { message: 'Review not found' });
+    const status = (q.get('status') || '').toUpperCase();
+    if (!['PENDING', 'APPROVED', 'REJECTED'].includes(status)) return send(res, 400, { message: 'Invalid status' });
+    r.status = status;
+    return send(res, 200, reviewDto(r));
+  }
+
+  // ----- Admin: schools CRUD -----
+  if (path === '/api/v1/admin/schools' && method === 'POST') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const body = await readBody(req);
+    if (!body.name) return send(res, 400, { message: 'name is required' });
+    const id = Math.max(0, ...schools.map((s) => s.id)) + 1;
+    const school = { category: 'UNIVERSITY', currency: 'XAF', region: 'Centre', city: 'Yaoundé', coverImageUrl: null, website: null, phone: null, email: null, description: null, address: null, latitude: null, longitude: null, tuitionFee: null, ...body, id };
+    schools.push(school);
+    if (body.history) histories[id] = body.history;
+    return send(res, 201, detail(school, currentUser(req)?.id));
+  }
+  m = path.match(/^\/api\/v1\/admin\/schools\/(\d+)$/);
+  if (m && method === 'PUT') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const sid = parseInt(m[1], 10);
+    const school = schools.find((s) => s.id === sid);
+    if (!school) return send(res, 404, { message: 'School not found' });
+    const body = await readBody(req);
+    Object.assign(school, body, { id: sid });
+    if (body.history !== undefined) histories[sid] = body.history;
+    return send(res, 200, detail(school, currentUser(req)?.id));
+  }
+  m = path.match(/^\/api\/v1\/admin\/schools\/(\d+)$/);
+  if (m && method === 'DELETE') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const sid = parseInt(m[1], 10);
+    const idx = schools.findIndex((s) => s.id === sid);
+    if (idx < 0) return send(res, 404, { message: 'School not found' });
+    schools.splice(idx, 1);
+    for (let i = programs.length - 1; i >= 0; i--) if (programs[i].schoolId === sid) programs.splice(i, 1);
+    reviews = reviews.filter((r) => r.schoolId !== sid);
+    delete uploadedImages[sid];
     return send(res, 204);
   }
 

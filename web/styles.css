@@ -86,6 +86,23 @@ main { padding: 18px 22px 60px; max-width: 1100px; margin: 0 auto; }
 .kv { display: grid; grid-template-columns: 130px 1fr; gap: 4px 12px; margin: 14px 0; font-size: 14px; }
 .kv dt { color: var(--muted); }
 .section-title { margin: 18px 0 8px; font-size: 15px; border-top: 1px solid var(--line); padding-top: 14px; }
+/* Admin dashboard */
+.asubtabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 16px; }
+.asub { border: 1px solid var(--line); background: #fff; padding: 7px 14px; border-radius: 999px; cursor: pointer; font-size: 14px; }
+.asub.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; text-align: center; }
+.stat-n { font-size: 32px; font-weight: 800; color: var(--teal); }
+.stat-l { font-size: 13px; color: var(--muted); }
+.adminform { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.adminform input { padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; flex: 1 1 140px; }
+.tablewrap { overflow-x: auto; }
+.atable { width: 100%; border-collapse: collapse; font-size: 14px; }
+.atable th, .atable td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; white-space: nowrap; }
+.atable th { background: #eef5f5; }
+.btn.danger { color: #b91c1c; border-color: #f0c5c5; }
+.btn.danger:hover { background: #b91c1c; color: #fff; }
+
 /* School photo gallery + admin upload */
 .gallery { display: flex; gap: 8px; overflow-x: auto; margin: 10px 0; padding-bottom: 4px; }
 .gthumb { position: relative; flex: 0 0 auto; }

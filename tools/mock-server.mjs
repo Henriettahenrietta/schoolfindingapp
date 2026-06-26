@@ -50,6 +50,12 @@ async function cloudinaryUpload(file) {
 
 // Uploaded images per school id (in-memory).
 const uploadedImages = {};
+// Custom uploaded picture per programme id (overrides the generated field image).
+const programImages = {};
+// Visitor counts per day: 'YYYY-MM-DD' -> count.
+const visitsByDay = {};
+// Messages between students and admins: { id, studentId, sender: 'STUDENT'|'ADMIN', text, createdAt }.
+const messages = [];
 
 // ----------------------------- Seed data -----------------------------
 const NOW = '2026-01-01T08:00:00Z';
@@ -198,7 +204,7 @@ let reviews = [
 ];
 
 let favorites = []; // { userId, schoolId }
-let seq = { user: 100, review: 100, favorite: 1, image: 1 };
+let seq = { user: 100, review: 100, favorite: 1, image: 1, message: 1 };
 
 // ----------------------------- Helpers -----------------------------
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -223,7 +229,7 @@ function detail(s, userId) {
     website: s.website, phone: s.phone, email: s.email, coverImageUrl: s.coverImageUrl,
     averageRating: r.averageRating, ratingCount: r.ratingCount,
     favorite: userId != null && favorites.some((f) => f.userId === userId && f.schoolId === s.id),
-    programs: programs.filter((p) => p.schoolId === s.id).map((p) => ({ id: p.id, name: p.name, faculty: p.faculty, level: p.level, durationMonths: p.durationMonths, tuitionFee: p.tuitionFee })),
+    programs: programs.filter((p) => p.schoolId === s.id).map((p) => ({ id: p.id, name: p.name, faculty: p.faculty, level: p.level, durationMonths: p.durationMonths, tuitionFee: p.tuitionFee, image: programImages[p.id] || null })),
     images: uploadedImages[s.id] || [],
   };
 }
@@ -452,12 +458,96 @@ const server = http.createServer(async (req, res) => {
     return send(res, 204);
   }
 
+  // ----- Visitor ping (public) -----
+  if (path === '/api/v1/visit' && method === 'POST') {
+    const day = new Date().toISOString().slice(0, 10);
+    visitsByDay[day] = (visitsByDay[day] || 0) + 1;
+    return send(res, 204);
+  }
+
   // ----- Admin: analytics -----
   if (path === '/api/v1/admin/analytics' && method === 'GET') {
     if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
     const byCat = {};
     schools.forEach((s) => { byCat[s.category] = (byCat[s.category] || 0) + 1; });
-    return send(res, 200, { totalSchools: schools.length, totalUsers: users.length, totalReviews: reviews.length, schoolsByCategory: byCat });
+    const today = new Date();
+    const last7 = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today.getTime() - i * 86400000).toISOString().slice(0, 10);
+      last7.push({ day: d, count: visitsByDay[d] || 0 });
+    }
+    const todayKey = today.toISOString().slice(0, 10);
+    return send(res, 200, {
+      totalSchools: schools.length,
+      totalUsers: users.length,
+      totalReviews: reviews.length,
+      schoolsByCategory: byCat,
+      visitorsToday: visitsByDay[todayKey] || 0,
+      visitorsByDay: last7,
+    });
+  }
+
+  // ----- Admin: per-programme image -----
+  m = path.match(/^\/api\/v1\/admin\/programs\/(\d+)\/image$/);
+  if (m && method === 'POST') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const pid = parseInt(m[1], 10);
+    if (!programs.find((p) => p.id === pid)) return send(res, 404, { message: 'Programme not found' });
+    const body = await readBody(req);
+    if (!body.file) return send(res, 400, { message: 'file (data URI) is required' });
+    try {
+      programImages[pid] = await cloudinaryUpload(body.file);
+      return send(res, 201, { id: pid, url: programImages[pid] });
+    } catch (e) { return send(res, 502, { message: e.message }); }
+  }
+  if (m && method === 'DELETE') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    delete programImages[parseInt(m[1], 10)];
+    return send(res, 204);
+  }
+
+  // ----- Messages: student side -----
+  if (path === '/api/v1/messages' && method === 'GET') {
+    const me = currentUser(req);
+    if (!me) return send(res, 401, { message: 'Authentication required' });
+    return send(res, 200, messages.filter((x) => x.studentId === me.id).sort((a, b) => a.id - b.id));
+  }
+  if (path === '/api/v1/messages' && method === 'POST') {
+    const me = currentUser(req);
+    if (!me) return send(res, 401, { message: 'Authentication required' });
+    const body = await readBody(req);
+    if (!body.text || !body.text.trim()) return send(res, 400, { message: 'text is required' });
+    const msg = { id: ++seq.message, studentId: me.id, sender: 'STUDENT', text: body.text.trim(), createdAt: new Date().toISOString() };
+    messages.push(msg);
+    return send(res, 201, msg);
+  }
+
+  // ----- Messages: admin side -----
+  if (path === '/api/v1/admin/messages' && method === 'GET') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const convos = {};
+    messages.forEach((mm) => { (convos[mm.studentId] = convos[mm.studentId] || []).push(mm); });
+    const list = Object.entries(convos).map(([sid, msgs]) => {
+      const u = users.find((x) => x.id === Number(sid));
+      const last = msgs[msgs.length - 1];
+      return { studentId: Number(sid), studentName: (u && (u.displayName || u.email)) || ('User ' + sid), lastText: last.text, lastAt: last.createdAt, count: msgs.length };
+    }).sort((a, b) => (a.lastAt < b.lastAt ? 1 : -1));
+    return send(res, 200, list);
+  }
+  m = path.match(/^\/api\/v1\/admin\/messages\/(\d+)$/);
+  if (m && method === 'GET') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const sid = parseInt(m[1], 10);
+    return send(res, 200, messages.filter((x) => x.studentId === sid).sort((a, b) => a.id - b.id));
+  }
+  if (m && method === 'POST') {
+    if (!isAdmin(req)) return send(res, 403, { message: 'Admin access required' });
+    const sid = parseInt(m[1], 10);
+    const body = await readBody(req);
+    if (!body.text || !body.text.trim()) return send(res, 400, { message: 'text is required' });
+    const msg = { id: ++seq.message, studentId: sid, sender: 'ADMIN', text: body.text.trim(), createdAt: new Date().toISOString() };
+    messages.push(msg);
+    return send(res, 201, msg);
   }
 
   // ----- Admin: users -----

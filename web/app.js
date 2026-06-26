@@ -100,6 +100,9 @@ function renderIdentity() {
   const admin = session()?.role === 'ADMIN';
   document.querySelectorAll('.admin-only').forEach((t) => { t.style.display = admin ? '' : 'none'; });
   if (!admin && currentView === 'admin') showView('discover');
+  const student = !!session() && !admin;
+  document.querySelectorAll('.student-only').forEach((t) => { t.style.display = student ? '' : 'none'; });
+  if (!student && currentView === 'student') showView('discover');
 }
 
 // ---------- auth modal ----------
@@ -283,14 +286,16 @@ function renderPrograms(s) {
   if (!s.programs.length) return '';
   const slides = s.programs.map((p) => {
     const f = progField(p.name + ' ' + (p.faculty || ''));
-    const img = `images/${f.key}.svg`; // local, always available
+    const img = p.image || `images/${f.key}.svg`; // custom upload, else local field image
     const meta = [p.level, p.durationMonths ? p.durationMonths + ' months' : null, fmtMoney(p.tuitionFee, s.currency)].filter(Boolean).join(' · ');
+    const canEdit = session()?.role === 'ADMIN';
     return `
       <div class="slide">
         <div class="slide-img" style="background:linear-gradient(135deg, ${f.c[0]}, ${f.c[1]})">
           <span class="slide-emoji">${f.icon}</span>
           <img src="${img}" alt="${esc(p.name)}" loading="lazy" onerror="this.remove()">
           ${p.faculty ? `<span class="slide-fac">${esc(p.faculty)}</span>` : ''}
+          ${canEdit ? `<button class="slide-edit" title="Set picture" onclick="editProgramImage(${p.id})">📷</button>` : ''}
         </div>
         <div class="slide-body">
           <h4>${esc(p.name)}</h4>
@@ -305,6 +310,28 @@ function renderPrograms(s) {
       <div class="car-track">${slides}</div>
       <button type="button" class="car-btn next" onclick="carScroll(this,1)">›</button>
     </div>`;
+}
+
+// Admin: upload/replace the picture for one programme.
+function editProgramImage(pid) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = () => {
+    const f = input.files[0];
+    if (!f) return;
+    toast('Uploading picture…');
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        await api('/admin/programs/' + pid + '/image', { method: 'POST', body: JSON.stringify({ file: reader.result }) });
+        toast('Programme picture updated ✓');
+        if (currentDetailId != null) openDetail(currentDetailId);
+      } catch (e) { toast(e.message); }
+    };
+    reader.readAsDataURL(f);
+  };
+  input.click();
 }
 
 let carTimer;
@@ -460,24 +487,69 @@ function wireReviewForm(id) {
 let adminSub = 'analytics';
 
 function loadAdmin() {
-  document.querySelectorAll('.asub').forEach((b) => b.classList.toggle('active', b.dataset.asub === adminSub));
+  document.querySelectorAll('.aside').forEach((b) => b.classList.toggle('active', b.dataset.asub === adminSub));
   const panel = document.getElementById('adminPanel');
   panel.innerHTML = '<p class="muted">Loading…</p>';
-  ({ analytics: adminAnalytics, schools: adminSchools, users: adminUsers, reviews: adminReviews }[adminSub] || adminAnalytics)(panel);
+  ({ analytics: adminAnalytics, schools: adminSchools, users: adminUsers, reviews: adminReviews, messages: adminMessages }[adminSub] || adminAnalytics)(panel);
 }
 
 async function adminAnalytics(panel) {
   try {
     const a = await api('/admin/analytics');
+    const maxV = Math.max(1, ...(a.visitorsByDay || []).map((d) => d.count));
+    const bars = (a.visitorsByDay || []).map((d) => {
+      const h = Math.round((d.count / maxV) * 90) + 4;
+      const label = d.day.slice(5); // MM-DD
+      return `<div class="bar"><div class="bar-fill" style="height:${h}px" title="${d.count}"></div><div class="bar-x">${label}</div><div class="bar-n">${d.count}</div></div>`;
+    }).join('');
     panel.innerHTML = `
+      <h2>Analytics</h2>
       <div class="stat-grid">
+        <div class="stat"><div class="stat-n">${a.visitorsToday ?? 0}</div><div class="stat-l">Visitors today</div></div>
         <div class="stat"><div class="stat-n">${a.totalSchools}</div><div class="stat-l">Universities</div></div>
         <div class="stat"><div class="stat-n">${a.totalUsers}</div><div class="stat-l">Users</div></div>
         <div class="stat"><div class="stat-n">${a.totalReviews}</div><div class="stat-l">Reviews</div></div>
       </div>
+      <div class="section-title">Visitors — last 7 days</div>
+      <div class="barchart">${bars}</div>
       <div class="section-title">Universities by category</div>
       <ul>${Object.entries(a.schoolsByCategory).map(([k, v]) => `<li>${esc(k)}: <b>${v}</b></li>`).join('')}</ul>`;
   } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+
+// Admin messaging: conversations + thread + reply.
+let adminConvoId = null;
+async function adminMessages(panel) {
+  try {
+    const convos = await api('/admin/messages');
+    const list = convos.length
+      ? convos.map((c) => `<button class="convo ${adminConvoId === c.studentId ? 'active' : ''}" onclick="adminOpenConvo(${c.studentId})"><b>${esc(c.studentName)}</b><span>${esc(c.lastText)}</span></button>`).join('')
+      : '<p class="muted">No messages yet.</p>';
+    panel.innerHTML = `<h2>Messages</h2><div class="msg-layout"><div class="convo-list">${list}</div><div id="convoThread" class="convo-thread"><p class="muted">Select a conversation.</p></div></div>`;
+    if (adminConvoId != null) adminOpenConvo(adminConvoId);
+  } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+async function adminOpenConvo(studentId) {
+  adminConvoId = studentId;
+  document.querySelectorAll('.convo').forEach((b) => b.classList.toggle('active', b.getAttribute('onclick').includes('(' + studentId + ')')));
+  const thread = document.getElementById('convoThread');
+  thread.innerHTML = '<p class="muted">Loading…</p>';
+  try {
+    const msgs = await api('/admin/messages/' + studentId);
+    thread.innerHTML = `
+      <div class="bubbles">${msgs.map(bubbleHtml).join('')}</div>
+      <div class="msg-compose"><input id="adminMsgText" placeholder="Reply…"><button class="btn primary" id="adminMsgSend">Send</button></div>`;
+    const send = async () => {
+      const t = document.getElementById('adminMsgText').value.trim();
+      if (!t) return;
+      try { await api('/admin/messages/' + studentId, { method: 'POST', body: JSON.stringify({ text: t }) }); adminOpenConvo(studentId); } catch (e) { toast(e.message); }
+    };
+    document.getElementById('adminMsgSend').onclick = send;
+    document.getElementById('adminMsgText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+  } catch (e) { thread.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+function bubbleHtml(m) {
+  return `<div class="bubble ${m.sender === 'ADMIN' ? 'me' : 'them'}">${esc(m.text)}</div>`;
 }
 
 async function adminSchools(panel) {
@@ -605,6 +677,68 @@ async function adminReviews(panel) {
 }
 async function adminModerate(id, status) { try { await api(`/admin/reviews/${id}/status?status=${status}`, { method: 'PUT' }); toast('Review ' + status.toLowerCase()); loadAdmin(); } catch (e) { toast(e.message); } }
 
+// ---------- student dashboard ----------
+let userPos = null;
+function ensureGeo() {
+  if (userPos || !navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => { userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; if (currentView === 'student') loadStudent(); },
+    () => {},
+    { timeout: 8000 },
+  );
+}
+function distanceKm(a, b) {
+  const R = 6371, toR = (d) => (d * Math.PI) / 180;
+  const dLat = toR(b.lat - a.lat), dLng = toR(b.lng - a.lng);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toR(a.lat)) * Math.cos(toR(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+function favCardHtml(s) {
+  let dist = '';
+  if (userPos && s.latitude != null && s.longitude != null) {
+    dist = `<div class="muted">📍 ${distanceKm(userPos, { lat: s.latitude, lng: s.longitude }).toFixed(1)} km from you</div>`;
+  }
+  return `<div class="card"><span class="badge">${catLabel(s.category)}</span><h3>${esc(s.name)}</h3><div class="muted">${esc(s.city || '')}</div>${dist}<div class="row"><span class="stars">${stars(s.averageRating)} <span class="muted">(${s.ratingCount})</span></span><span class="price">${fmtMoney(s.tuitionFee, s.currency)}</span></div><div class="card-actions"><button class="btn primary" onclick="openDetail(${s.id})">Details</button></div></div>`;
+}
+function myReviewHtml(r) {
+  return `<div class="review"><div class="stars">${stars(r.rating)}</div><div>${esc(r.comment || '')}</div><div class="meta">${esc(r.schoolName || '')} · ${r.status}</div></div>`;
+}
+function bubbleStudentHtml(m) { return `<div class="bubble ${m.sender === 'STUDENT' ? 'me' : 'them'}">${esc(m.text)}</div>`; }
+
+async function loadStudent() {
+  const panel = document.getElementById('studentPanel');
+  panel.innerHTML = '<p class="muted">Loading…</p>';
+  ensureGeo();
+  try {
+    const [favs, myReviews, msgs] = await Promise.all([
+      api('/favorites').catch(() => []),
+      api('/me/reviews').catch(() => []),
+      api('/messages').catch(() => []),
+    ]);
+    panel.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-n">${favs.length}</div><div class="stat-l">Favourites</div></div>
+        <div class="stat"><div class="stat-n">${myReviews.length}</div><div class="stat-l">My reviews</div></div>
+      </div>
+      <div class="section-title">My favourite schools ${userPos ? '<span class="muted" style="font-weight:400">· distance from you</span>' : '<span class="muted" style="font-weight:400">· allow location for distances</span>'}</div>
+      <div class="grid">${favs.length ? favs.map(favCardHtml).join('') : '<div class="empty">No favourites yet — tap 🤍 on a school.</div>'}</div>
+      <div class="section-title">My reviews</div>
+      ${myReviews.length ? myReviews.map(myReviewHtml).join('') : '<p class="muted">You haven\'t written any reviews yet.</p>'}
+      <div class="section-title">Message the admin</div>
+      <div class="msg-card">
+        <div class="bubbles">${msgs.length ? msgs.map(bubbleStudentHtml).join('') : '<p class="muted">No messages yet. Say hello 👋</p>'}</div>
+        <div class="msg-compose"><input id="stuMsgText" placeholder="Type a message to the admin…"><button class="btn primary" id="stuMsgSend">Send</button></div>
+      </div>`;
+    const send = async () => {
+      const t = document.getElementById('stuMsgText').value.trim();
+      if (!t) return;
+      try { await api('/messages', { method: 'POST', body: JSON.stringify({ text: t }) }); loadStudent(); } catch (e) { toast(e.message); }
+    };
+    document.getElementById('stuMsgSend').onclick = send;
+    document.getElementById('stuMsgText').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+  } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+
 // ---------- view switching ----------
 let currentView = 'discover';
 function showView(v) {
@@ -615,11 +749,12 @@ function showView(v) {
   if (v === 'compare') loadCompare();
   if (v === 'favorites') loadFavorites();
   if (v === 'admin') loadAdmin();
+  if (v === 'student') loadStudent();
 }
 
 // ---------- init ----------
 document.querySelectorAll('.tab').forEach((t) => (t.onclick = () => showView(t.dataset.view)));
-document.querySelectorAll('.asub').forEach((b) => (b.onclick = () => { adminSub = b.dataset.asub; loadAdmin(); }));
+document.querySelectorAll('.aside').forEach((b) => (b.onclick = () => { adminSub = b.dataset.asub; loadAdmin(); }));
 document.getElementById('searchForm').onsubmit = (e) => { e.preventDefault(); loadSchools(); };
 function closeModal() { clearInterval(carTimer); document.getElementById('modal').classList.add('hidden'); }
 document.getElementById('modalClose').onclick = closeModal;
@@ -630,3 +765,4 @@ document.getElementById('authModal').onclick = (e) => { if (e.target.id === 'aut
 renderIdentity();
 saveCompare();
 loadSchools();
+fetch(API + '/visit', { method: 'POST' }).catch(() => {}); // record a daily visit

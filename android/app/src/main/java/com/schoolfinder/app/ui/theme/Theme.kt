@@ -8,21 +8,23 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val Teal = Color(0xFF0D6E6E)
-private val TealDark = Color(0xFF09504F)
-private val Amber = Color(0xFFF2A900)
+private val Maroon = Color(0xFF800020)
+private val MaroonDark = Color(0xFF5A0017)
+private val Amber = Color(0xFFE0A51E)
 
 private val LightColors = lightColorScheme(
-    primary = Teal,
+    primary = Maroon,
     onPrimary = Color.White,
     secondary = Amber,
     onSecondary = Color.Black,
-    primaryContainer = Color(0xFFB8E6E4),
-    onPrimaryContainer = TealDark,
+    background = Color.White,
+    surface = Color.White,
+    primaryContainer = Color(0xFFF0D6DB),
+    onPrimaryContainer = MaroonDark,
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF5FC9C7),
+    primary = Color(0xFFD98A9A),
     onPrimary = Color.Black,
     secondary = Amber,
 )

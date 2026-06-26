@@ -8,10 +8,13 @@
 //
 // Leave apiKey empty to keep the lightweight dev sign-in (X-Debug headers).
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  appId: "",
+  apiKey: "AIzaSyDMq6_SNzQwwlc_h_bBUITtcVS6XOl298E",
+  authDomain: "unimatch-42d8b.firebaseapp.com",
+  projectId: "unimatch-42d8b",
+  storageBucket: "unimatch-42d8b.firebasestorage.app",
+  messagingSenderId: "386455509232",
+  appId: "1:386455509232:web:43702311fec5802c538a35",
+  measurementId: "G-320LHZ2DWS",
 };
 
 // Emails treated as admins by the local Node dev server when they sign in via Firebase.

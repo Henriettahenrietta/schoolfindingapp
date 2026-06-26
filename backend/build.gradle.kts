@@ -35,6 +35,9 @@ dependencies {
     // Firebase Admin (token verification). Optional at runtime via FIREBASE_ENABLED.
     implementation("com.google.firebase:firebase-admin:9.3.0")
 
+    // Cloudinary image hosting/gallery. Active when CLOUDINARY_URL is set.
+    implementation("com.cloudinary:cloudinary-http44:1.39.0")
+
     // H2 powers the lightweight `local` profile (in-memory DB, no PostgreSQL needed).
     runtimeOnly("com.h2database:h2")
 

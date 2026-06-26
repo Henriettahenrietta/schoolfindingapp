@@ -20,6 +20,8 @@ interface SchoolRepository : JpaRepository<School, Long>, JpaSpecificationExecut
 
 interface ProgramRepository : JpaRepository<com.schoolfinder.domain.Program, Long>
 
+interface SchoolImageRepository : JpaRepository<com.schoolfinder.domain.SchoolImage, Long>
+
 interface ReviewRepository : JpaRepository<Review, Long> {
     fun findBySchoolIdAndStatusOrderByCreatedAtDesc(
         schoolId: Long,

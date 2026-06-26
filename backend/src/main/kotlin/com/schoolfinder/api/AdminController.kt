@@ -6,6 +6,7 @@ import com.schoolfinder.service.AdminService
 import jakarta.validation.Valid
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -34,6 +36,21 @@ class AdminController(private val admin: AdminService) {
     @DeleteMapping("/schools/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteSchool(@PathVariable id: Long) = admin.deleteSchool(id)
+
+    // ----- School images (Cloudinary upload) -----
+
+    @PostMapping("/schools/{id}/images", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @ResponseStatus(HttpStatus.CREATED)
+    fun uploadImage(
+        @PathVariable id: Long,
+        @RequestParam("file") file: MultipartFile,
+        @RequestParam(required = false) caption: String?,
+        @RequestParam(defaultValue = "false") setCover: Boolean,
+    ): ImageDto = admin.uploadSchoolImage(id, file.bytes, caption, setCover)
+
+    @DeleteMapping("/schools/images/{imageId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteImage(@PathVariable imageId: Long) = admin.deleteSchoolImage(imageId)
 
     // ----- Users -----
 

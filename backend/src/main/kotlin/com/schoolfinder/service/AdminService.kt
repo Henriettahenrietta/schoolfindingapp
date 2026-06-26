@@ -1,5 +1,6 @@
 package com.schoolfinder.service
 
+import com.schoolfinder.api.ImageDto
 import com.schoolfinder.api.NotFoundException
 import com.schoolfinder.api.PageResponse
 import com.schoolfinder.api.ReviewDto
@@ -10,8 +11,10 @@ import com.schoolfinder.domain.Review
 import com.schoolfinder.domain.ReviewStatus
 import com.schoolfinder.domain.Role
 import com.schoolfinder.domain.School
+import com.schoolfinder.domain.SchoolImage
 import com.schoolfinder.repository.AppUserRepository
 import com.schoolfinder.repository.ReviewRepository
+import com.schoolfinder.repository.SchoolImageRepository
 import com.schoolfinder.repository.SchoolRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -22,8 +25,30 @@ class AdminService(
     private val schools: SchoolRepository,
     private val users: AppUserRepository,
     private val reviews: ReviewRepository,
+    private val images: SchoolImageRepository,
+    private val cloudinary: CloudinaryService,
     private val schoolService: SchoolService,
 ) {
+
+    // ----- School images (Cloudinary) -----
+
+    @Transactional
+    fun uploadSchoolImage(id: Long, bytes: ByteArray, caption: String?, setCover: Boolean): ImageDto {
+        val school = schools.findById(id).orElseThrow { NotFoundException("School $id not found") }
+        val url = cloudinary.upload(bytes)
+        val img = images.save(SchoolImage(school = school, url = url, caption = caption))
+        if (setCover) {
+            school.coverImageUrl = url
+            schools.save(school)
+        }
+        return ImageDto(img.id!!, img.url, img.caption)
+    }
+
+    @Transactional
+    fun deleteSchoolImage(imageId: Long) {
+        if (!images.existsById(imageId)) throw NotFoundException("Image $imageId not found")
+        images.deleteById(imageId)
+    }
 
     // ----- Schools -----
 

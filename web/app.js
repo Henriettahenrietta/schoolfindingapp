@@ -90,45 +90,66 @@ function renderIdentity() {
   if (s) {
     el.innerHTML = `<span class="who">👤 ${esc(s.name)} · ${esc(s.role)}</span><button id="signout">Sign out</button>`;
     document.getElementById('signout').onclick = doSignOut;
-  } else if (FB_ENABLED()) {
-    el.innerHTML = `
-      <button id="fbGoogle" class="gbtn"><span class="gicon">G</span> Continue with Google</button>
-      <input id="fbEmail" type="email" placeholder="email" class="fbi">
-      <input id="fbPass" type="password" placeholder="password" class="fbi">
-      <button id="fbIn">Sign in</button>
-      <button id="fbUp">Register</button>`;
-    document.getElementById('fbGoogle').onclick = fbGoogle;
-    document.getElementById('fbIn').onclick = () => fbAuth(false);
-    document.getElementById('fbUp').onclick = () => fbAuth(true);
   } else {
-    el.innerHTML = `
-      <span>Browsing as guest ·</span>
-      <button data-as="student">Sign in as student</button>
-      <button data-as="admin">Sign in as admin</button>`;
-    el.querySelectorAll('button').forEach((b) => (b.onclick = () => setSession(PRESETS[b.dataset.as])));
+    el.innerHTML = `<button id="openAuth">Sign in</button>`;
+    document.getElementById('openAuth').onclick = openAuth;
   }
   const admin = session()?.role === 'ADMIN';
   document.querySelectorAll('.admin-only').forEach((t) => { t.style.display = admin ? '' : 'none'; });
   if (!admin && currentView === 'admin') showView('discover');
 }
 
+// ---------- auth modal ----------
+let authMode = 'signin';
+function openAuth() { document.getElementById('authModal').classList.remove('hidden'); renderAuth(); }
+function closeAuth() { document.getElementById('authModal').classList.add('hidden'); }
+
+function renderAuth() {
+  const body = document.getElementById('authBody');
+  if (FB_ENABLED()) {
+    body.innerHTML = `
+      <div class="auth-tabs">
+        <button class="atab ${authMode === 'signin' ? 'active' : ''}" data-m="signin">Sign in</button>
+        <button class="atab ${authMode === 'signup' ? 'active' : ''}" data-m="signup">Create account</button>
+      </div>
+      <button class="gbtn gbtn-lg" id="aGoogle"><span class="gicon">G</span> Continue with Google</button>
+      <div class="auth-or"><span>or ${authMode === 'signin' ? 'sign in' : 'sign up'} with email</span></div>
+      <input id="aEmail" type="email" placeholder="Email" class="auth-inp" autocomplete="email">
+      <input id="aPass" type="password" placeholder="Password (6+ characters)" class="auth-inp" autocomplete="current-password">
+      <button class="btn primary auth-submit" id="aSubmit">${authMode === 'signin' ? 'Sign in' : 'Create account'}</button>
+      <div id="aErr" class="auth-err"></div>`;
+    body.querySelectorAll('.atab').forEach((b) => (b.onclick = () => { authMode = b.dataset.m; renderAuth(); }));
+    document.getElementById('aGoogle').onclick = fbGoogle;
+    document.getElementById('aSubmit').onclick = () => fbAuth(authMode === 'signup');
+    document.getElementById('aPass').onkeydown = (e) => { if (e.key === 'Enter') fbAuth(authMode === 'signup'); };
+  } else {
+    body.innerHTML = `
+      <p class="muted">Demo sign-in. (Add your Firebase config in <code>web/firebase-config.js</code> to enable real Google / email accounts.)</p>
+      <button class="btn primary auth-submit" data-as="student">Continue as student</button>
+      <button class="btn auth-submit" data-as="admin">Continue as admin</button>`;
+    body.querySelectorAll('button[data-as]').forEach((b) => (b.onclick = () => { setSession(PRESETS[b.dataset.as]); closeAuth(); }));
+  }
+}
+
 async function fbGoogle() {
+  const err = document.getElementById('aErr');
   try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await firebase.auth().signInWithPopup(provider);
-    // onAuthStateChanged sets the session.
-  } catch (e) { toast(e.message); }
+    await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    closeAuth();
+  } catch (e) { if (err) err.textContent = e.message; else toast(e.message); }
 }
 
 async function fbAuth(register) {
-  const email = document.getElementById('fbEmail').value.trim();
-  const pass = document.getElementById('fbPass').value;
-  if (!email || !pass) { toast('Enter email and password'); return; }
+  const email = document.getElementById('aEmail')?.value.trim();
+  const pass = document.getElementById('aPass')?.value;
+  const err = document.getElementById('aErr');
+  if (err) err.textContent = '';
+  if (!email || !pass) { if (err) err.textContent = 'Enter your email and password.'; return; }
   try {
     if (register) await firebase.auth().createUserWithEmailAndPassword(email, pass);
     else await firebase.auth().signInWithEmailAndPassword(email, pass);
-    // onAuthStateChanged sets the session and updates the UI.
-  } catch (e) { toast(e.message); }
+    closeAuth();
+  } catch (e) { if (err) err.textContent = e.message; else toast(e.message); }
 }
 
 function doSignOut() {
@@ -542,6 +563,8 @@ document.getElementById('searchForm').onsubmit = (e) => { e.preventDefault(); lo
 function closeModal() { clearInterval(carTimer); document.getElementById('modal').classList.add('hidden'); }
 document.getElementById('modalClose').onclick = closeModal;
 document.getElementById('modal').onclick = (e) => { if (e.target.id === 'modal') closeModal(); };
+document.getElementById('authClose').onclick = closeAuth;
+document.getElementById('authModal').onclick = (e) => { if (e.target.id === 'authModal') closeAuth(); };
 
 renderIdentity();
 saveCompare();

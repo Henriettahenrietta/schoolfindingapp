@@ -256,7 +256,7 @@ function currentUser(req) {
   if (!u) {
     const email = req.headers['x-debug-email'] || claims?.email || null;
     const name = req.headers['x-debug-name'] || claims?.name || email || uid;
-    const adminEmails = (process.env.ADMIN_EMAILS || 'admin@unimatch.cm').split(',').map((s) => s.trim());
+    const adminEmails = (process.env.ADMIN_EMAILS || 'superadmin@unimatch.cm').split(',').map((s) => s.trim());
     const role = (req.headers['x-debug-role'] || (email && adminEmails.includes(email) ? 'ADMIN' : 'STUDENT')).toUpperCase();
     u = { id: ++seq.user, firebaseUid: uid, email, displayName: name, role, active: true, createdAt: new Date().toISOString() };
     users.push(u);

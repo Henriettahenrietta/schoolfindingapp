@@ -18,4 +18,5 @@ window.FIREBASE_CONFIG = {
 };
 
 // Emails treated as admins by the local Node dev server when they sign in via Firebase.
-window.ADMIN_EMAILS = ["admin@unimatch.cm"];
+// (The server reads its own ADMIN_EMAILS; this is documentation of the default.)
+window.ADMIN_EMAILS = ["superadmin@unimatch.cm"];

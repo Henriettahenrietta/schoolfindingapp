@@ -92,10 +92,12 @@ function renderIdentity() {
     document.getElementById('signout').onclick = doSignOut;
   } else if (FB_ENABLED()) {
     el.innerHTML = `
+      <button id="fbGoogle" class="gbtn"><span class="gicon">G</span> Continue with Google</button>
       <input id="fbEmail" type="email" placeholder="email" class="fbi">
       <input id="fbPass" type="password" placeholder="password" class="fbi">
       <button id="fbIn">Sign in</button>
       <button id="fbUp">Register</button>`;
+    document.getElementById('fbGoogle').onclick = fbGoogle;
     document.getElementById('fbIn').onclick = () => fbAuth(false);
     document.getElementById('fbUp').onclick = () => fbAuth(true);
   } else {
@@ -108,6 +110,14 @@ function renderIdentity() {
   const admin = session()?.role === 'ADMIN';
   document.querySelectorAll('.admin-only').forEach((t) => { t.style.display = admin ? '' : 'none'; });
   if (!admin && currentView === 'admin') showView('discover');
+}
+
+async function fbGoogle() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await firebase.auth().signInWithPopup(provider);
+    // onAuthStateChanged sets the session.
+  } catch (e) { toast(e.message); }
 }
 
 async function fbAuth(register) {

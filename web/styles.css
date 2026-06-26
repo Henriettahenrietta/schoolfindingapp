@@ -38,6 +38,8 @@ body {
 }
 .identity .who { background: rgba(255,255,255,.18); padding: 6px 10px; border-radius: 8px; }
 .identity .fbi { padding: 6px 9px; border: none; border-radius: 8px; font-size: 13px; width: 130px; }
+.identity .gbtn { background: #fff; color: #3c4043; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.identity .gbtn .gicon { color: #4285f4; font-weight: 800; }
 
 .tabs { display: flex; gap: 4px; padding: 10px 22px 0; background: var(--bg); position: sticky; top: 0; z-index: 5; }
 .tab {

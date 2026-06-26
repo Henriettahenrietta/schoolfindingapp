@@ -2,7 +2,7 @@
 //
 // To ENABLE real Firebase Auth:
 //   1. Firebase console → create/select a project.
-//   2. Authentication → Sign-in method → enable "Email/Password".
+//   2. Authentication → Sign-in method → enable "Email/Password" AND "Google".
 //   3. Project settings → Your apps → Web app → "SDK setup and configuration" → Config.
 //   4. Paste the values below (the web apiKey is NOT a secret — safe to commit).
 //

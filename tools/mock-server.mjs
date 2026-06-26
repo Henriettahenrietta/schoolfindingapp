@@ -108,6 +108,26 @@ const histories = {
   11: "The Sub-regional Institute of Statistics and Applied Economics (ISSEA), a CEMAC institution founded in 1984 and hosted in Yaoundé, trains statisticians, statistical engineers and applied economists for Central Africa.",
 };
 
+// Sample contact details so the detail page can offer call / WhatsApp / email / website
+// actions to reach the school authorities. Admins can edit these via the dashboard.
+const contactInfo = {
+  1: { phone: '+237 222 23 44 91', email: 'contact@uy1.cm', website: 'https://www.uy1.cm' },
+  2: { phone: '+237 222 23 76 39', email: 'info@univ-yaounde2.org' },
+  3: { phone: '+237 222 23 74 00', email: 'info@ucac-icy.net', website: 'https://www.ucac-icy.net' },
+  4: { phone: '+237 222 20 84 47', email: 'contact@upac.cm' },
+  5: { phone: '+237 242 61 23 23', email: 'info@ictuniversity.edu.cm', website: 'https://ictuniversity.org' },
+  6: { phone: '+237 242 09 90 90', email: 'info@pkfokam.org' },
+  7: { phone: '+237 233 43 11 22', email: 'info@yibs.cm' },
+  8: { phone: '+237 233 42 55 66', email: 'contact@citec.cm' },
+  9: { phone: '+237 222 22 45 47', email: 'contact@polytechnique.cm' },
+  10: { phone: '+237 222 23 08 52', email: 'info@enam.cm' },
+  11: { phone: '+237 222 22 09 52', email: 'issea@issea-cemac.org' },
+};
+schools.forEach((s) => {
+  const c = contactInfo[s.id];
+  if (c) { s.phone = s.phone || c.phone; s.email = s.email || c.email; s.website = s.website || c.website; }
+});
+
 const programs = [
   // University of Yaoundé I
   { id: 1, schoolId: 1, faculty: 'Faculty of Science', name: 'BSc Computer Science', level: 'Bachelor', durationMonths: 36, tuitionFee: 50000 },

@@ -413,6 +413,18 @@ async function deleteImage(imgId) {
   } catch (e) { toast(e.message); }
 }
 
+// Direct-contact actions so users can reach the school authorities.
+function contactBar(s) {
+  const btns = [];
+  if (s.phone) btns.push(`<a class="btn primary" href="tel:${esc(s.phone)}">📞 Call</a>`);
+  if (s.phone) btns.push(`<a class="btn" href="https://wa.me/${esc(String(s.phone).replace(/[^0-9]/g, ''))}" target="_blank" rel="noopener">💬 WhatsApp</a>`);
+  if (s.email) btns.push(`<a class="btn" href="mailto:${esc(s.email)}?subject=${encodeURIComponent('Enquiry via UniMatch Cameroon — ' + s.name)}">✉️ Email</a>`);
+  if (s.website) btns.push(`<a class="btn" href="${esc(s.website)}" target="_blank" rel="noopener">🌐 Website</a>`);
+  if (s.latitude != null && s.longitude != null) btns.push(`<a class="btn" href="https://www.google.com/maps/search/?api=1&query=${s.latitude},${s.longitude}" target="_blank" rel="noopener">🧭 Directions</a>`);
+  if (!btns.length) return '';
+  return `<div class="contact-card"><div class="section-title" style="margin-top:0">Contact the school directly</div><div class="contact-btns">${btns.join('')}</div></div>`;
+}
+
 // ---------- detail modal ----------
 async function openDetail(id) {
   currentDetailId = id;
@@ -435,10 +447,11 @@ async function openDetail(id) {
         <dt>Location</dt><dd>${esc(s.address || s.city || '—')}${s.region ? ', ' + esc(s.region) : ''}</dd>
         <dt>Tuition</dt><dd>${fmtMoney(s.tuitionFee, s.currency)}</dd>
         ${s.website ? `<dt>Website</dt><dd><a class="link" href="${esc(s.website)}" target="_blank">${esc(s.website)}</a></dd>` : ''}
-        ${s.phone ? `<dt>Phone</dt><dd>${esc(s.phone)}</dd>` : ''}
-        ${s.email ? `<dt>Email</dt><dd>${esc(s.email)}</dd>` : ''}
+        ${s.phone ? `<dt>Phone</dt><dd><a class="link" href="tel:${esc(s.phone)}">${esc(s.phone)}</a></dd>` : ''}
+        ${s.email ? `<dt>Email</dt><dd><a class="link" href="mailto:${esc(s.email)}?subject=${encodeURIComponent('Enquiry via UniMatch Cameroon — ' + s.name)}">${esc(s.email)}</a></dd>` : ''}
         ${maps ? `<dt>Navigate</dt><dd><a class="link" href="${maps}" target="_blank">Open in Google Maps ↗</a></dd>` : ''}
       </dl>
+      ${contactBar(s)}
       ${s.history ? `<div class="section-title">History</div><p>${esc(s.history)}</p>` : ''}
       ${renderPrograms(s)}
       <div class="section-title">Reviews</div>

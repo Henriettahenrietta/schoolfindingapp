@@ -8,8 +8,48 @@
 // JDK to run that one. This file just unblocks local testing on a machine without Java.
 
 import http from 'node:http';
+import { createHash } from 'node:crypto';
 
 const PORT = process.env.PORT || 8080;
+
+// Cloudinary credentials from env (never hard-coded). Supports CLOUDINARY_URL
+// (cloudinary://key:secret@cloud) or separate CLOUDINARY_* vars.
+function parseCloud() {
+  const url = process.env.CLOUDINARY_URL;
+  const folder = process.env.CLOUDINARY_FOLDER || 'hen2';
+  const m = url && url.match(/^cloudinary:\/\/([^:]+):([^@]+)@(.+)$/);
+  if (m) return { key: m[1], secret: m[2], name: m[3], folder };
+  return {
+    key: process.env.CLOUDINARY_API_KEY,
+    secret: process.env.CLOUDINARY_API_SECRET,
+    name: process.env.CLOUDINARY_CLOUD_NAME,
+    folder,
+  };
+}
+const CLOUD = parseCloud();
+
+// Signed server-side upload of a data URI / URL to Cloudinary.
+async function cloudinaryUpload(file) {
+  if (!CLOUD.name || !CLOUD.key || !CLOUD.secret) {
+    throw new Error('Cloudinary not configured. Set CLOUDINARY_URL (or CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET).');
+  }
+  const timestamp = Math.floor(Date.now() / 1000);
+  const toSign = `folder=${CLOUD.folder}&timestamp=${timestamp}`;
+  const signature = createHash('sha1').update(toSign + CLOUD.secret).digest('hex');
+  const form = new FormData();
+  form.append('file', file);
+  form.append('api_key', CLOUD.key);
+  form.append('timestamp', String(timestamp));
+  form.append('folder', CLOUD.folder);
+  form.append('signature', signature);
+  const resp = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD.name}/image/upload`, { method: 'POST', body: form });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(json?.error?.message || `Cloudinary upload failed (${resp.status})`);
+  return json.secure_url || json.url;
+}
+
+// Uploaded images per school id (in-memory).
+const uploadedImages = {};
 
 // ----------------------------- Seed data -----------------------------
 const NOW = '2026-01-01T08:00:00Z';
@@ -156,7 +196,7 @@ let reviews = [
 ];
 
 let favorites = []; // { userId, schoolId }
-let seq = { user: 100, review: 100, favorite: 1 };
+let seq = { user: 100, review: 100, favorite: 1, image: 1 };
 
 // ----------------------------- Helpers -----------------------------
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -182,7 +222,7 @@ function detail(s, userId) {
     averageRating: r.averageRating, ratingCount: r.ratingCount,
     favorite: userId != null && favorites.some((f) => f.userId === userId && f.schoolId === s.id),
     programs: programs.filter((p) => p.schoolId === s.id).map((p) => ({ id: p.id, name: p.name, faculty: p.faculty, level: p.level, durationMonths: p.durationMonths, tuitionFee: p.tuitionFee })),
-    images: [],
+    images: uploadedImages[s.id] || [],
   };
 }
 
@@ -356,6 +396,35 @@ const server = http.createServer(async (req, res) => {
     if (!me) return send(res, 401, { message: 'Authentication required' });
     const mine = reviews.filter((r) => r.userId === me.id).sort((a, b) => b.id - a.id);
     return send(res, 200, mine.map(reviewDto));
+  }
+
+  // Admin: upload a school image to Cloudinary (signed)
+  m = path.match(/^\/api\/v1\/admin\/schools\/(\d+)\/images$/);
+  if (m && method === 'POST') {
+    const me = currentUser(req);
+    if (!me || me.role !== 'ADMIN') return send(res, 403, { message: 'Admin access required' });
+    const sid = parseInt(m[1], 10);
+    const school = schools.find((s) => s.id === sid);
+    if (!school) return send(res, 404, { message: `School ${sid} not found` });
+    const body = await readBody(req);
+    if (!body.file) return send(res, 400, { message: 'file (data URI) is required' });
+    try {
+      const url = await cloudinaryUpload(body.file);
+      const img = { id: ++seq.image, url, caption: body.caption || null };
+      (uploadedImages[sid] = uploadedImages[sid] || []).push(img);
+      if (body.setCover) school.coverImageUrl = url;
+      return send(res, 201, img);
+    } catch (e) {
+      return send(res, 502, { message: e.message });
+    }
+  }
+  m = path.match(/^\/api\/v1\/admin\/schools\/images\/(\d+)$/);
+  if (m && method === 'DELETE') {
+    const me = currentUser(req);
+    if (!me || me.role !== 'ADMIN') return send(res, 403, { message: 'Admin access required' });
+    const imgId = parseInt(m[1], 10);
+    for (const k of Object.keys(uploadedImages)) uploadedImages[k] = uploadedImages[k].filter((x) => x.id !== imgId);
+    return send(res, 204);
   }
 
   return send(res, 404, { message: `No route for ${method} ${path}` });

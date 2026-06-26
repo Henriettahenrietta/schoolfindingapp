@@ -243,8 +243,68 @@ function wireCarousel() {
   track.addEventListener('mouseleave', () => { clearInterval(carTimer); carTimer = setInterval(advance, 3500); });
 }
 
+// ---------- school photo gallery + admin upload (Cloudinary) ----------
+let currentDetailId = null;
+
+function renderGallery(s) {
+  if (!s.images || !s.images.length) return '';
+  const admin = session()?.role === 'ADMIN';
+  return '<div class="gallery">' + s.images.map((im) =>
+    `<div class="gthumb"><img src="${im.url}" alt="${esc(im.caption || '')}" loading="lazy">` +
+    (admin ? `<button class="gdel" title="Remove" onclick="deleteImage(${im.id})">✕</button>` : '') +
+    '</div>').join('') + '</div>';
+}
+
+function uploadFormHtml() {
+  return `
+    <div class="uploadbox">
+      <div class="section-title" style="margin-top:6px">Add photo → Cloudinary</div>
+      <input type="file" id="imgFile" accept="image/*">
+      <input type="text" id="imgCaption" placeholder="Caption (optional)">
+      <label class="ck"><input type="checkbox" id="imgCover"> Set as cover</label>
+      <button class="btn primary" id="imgUpload">Upload</button>
+      <span id="imgStatus" class="muted"></span>
+    </div>`;
+}
+
+function wireImageUpload(id) {
+  const btn = document.getElementById('imgUpload');
+  if (!btn) return;
+  btn.onclick = () => {
+    const f = document.getElementById('imgFile').files[0];
+    if (!f) { toast('Choose an image first'); return; }
+    const status = document.getElementById('imgStatus');
+    status.textContent = 'Uploading…';
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        await api(`/admin/schools/${id}/images`, {
+          method: 'POST',
+          body: JSON.stringify({
+            file: reader.result,
+            caption: document.getElementById('imgCaption').value.trim() || null,
+            setCover: document.getElementById('imgCover').checked,
+          }),
+        });
+        toast('Photo uploaded to Cloudinary ✓');
+        openDetail(id);
+      } catch (e) { status.textContent = ''; toast(e.message); }
+    };
+    reader.readAsDataURL(f);
+  };
+}
+
+async function deleteImage(imgId) {
+  try {
+    await api(`/admin/schools/images/${imgId}`, { method: 'DELETE' });
+    toast('Photo removed');
+    if (currentDetailId != null) openDetail(currentDetailId);
+  } catch (e) { toast(e.message); }
+}
+
 // ---------- detail modal ----------
 async function openDetail(id) {
+  currentDetailId = id;
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
   body.innerHTML = '<p class="muted">Loading…</p>';
@@ -257,6 +317,8 @@ async function openDetail(id) {
       <span class="badge">${catLabel(s.category)}</span>
       <h2>${esc(s.name)}</h2>
       <div class="stars">${stars(s.averageRating)} <span class="muted">${s.averageRating} · ${s.ratingCount} review(s)</span></div>
+      ${renderGallery(s)}
+      ${session()?.role === 'ADMIN' ? uploadFormHtml() : ''}
       <p>${esc(s.description || '')}</p>
       <dl class="kv">
         <dt>Location</dt><dd>${esc(s.address || s.city || '—')}${s.region ? ', ' + esc(s.region) : ''}</dd>
@@ -274,6 +336,7 @@ async function openDetail(id) {
     `;
     wireReviewForm(id);
     wireCarousel();
+    wireImageUpload(id);
   } catch (e) { body.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
 function reviewHtml(r) {

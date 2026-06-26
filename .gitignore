@@ -18,6 +18,9 @@ backend/src/main/resources/firebase-service-account.json
 android/app/google-services.json
 android/local.properties
 
+# Local dev-server chat persistence
+tools/chat-store.json
+
 # OS
 .DS_Store
 Thumbs.db

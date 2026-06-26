@@ -9,8 +9,27 @@
 
 import http from 'node:http';
 import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const PORT = process.env.PORT || 8080;
+
+// Persist chat (and the users who sent it) to disk so old messages survive restarts.
+const STORE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'chat-store.json');
+function saveStore() {
+  try { writeFileSync(STORE, JSON.stringify({ users, messages, seq }), 'utf8'); } catch (e) { /* ignore */ }
+}
+function loadStore() {
+  try {
+    if (!existsSync(STORE)) return;
+    const d = JSON.parse(readFileSync(STORE, 'utf8'));
+    if (Array.isArray(d.messages)) messages.push(...d.messages);
+    if (Array.isArray(d.users)) d.users.forEach((su) => { if (!users.find((u) => u.firebaseUid === su.firebaseUid)) users.push(su); });
+    if (d.seq) Object.assign(seq, d.seq);
+    console.log(`Loaded ${messages.length} stored message(s).`);
+  } catch (e) { /* ignore */ }
+}
 
 // Cloudinary credentials from env (never hard-coded). Supports CLOUDINARY_URL
 // (cloudinary://key:secret@cloud) or separate CLOUDINARY_* vars.
@@ -520,6 +539,7 @@ const server = http.createServer(async (req, res) => {
     if (!text && !body.image && !body.audio) return send(res, 400, { message: 'empty message' });
     const msg = { id: ++seq.message, studentId: me.id, sender: 'STUDENT', text: text || null, image: body.image || null, audio: body.audio || null, createdAt: new Date().toISOString() };
     messages.push(msg);
+    saveStore();
     return send(res, 201, msg);
   }
 
@@ -550,6 +570,7 @@ const server = http.createServer(async (req, res) => {
     if (!text && !body.image && !body.audio) return send(res, 400, { message: 'empty message' });
     const msg = { id: ++seq.message, studentId: sid, sender: 'ADMIN', text: text || null, image: body.image || null, audio: body.audio || null, createdAt: new Date().toISOString() };
     messages.push(msg);
+    saveStore();
     return send(res, 201, msg);
   }
 
@@ -632,6 +653,7 @@ const server = http.createServer(async (req, res) => {
   return send(res, 404, { message: `No route for ${method} ${path}` });
 });
 
+loadStore();
 server.listen(PORT, () => {
   console.log(`School Finder dev server (Node stand-in) listening on http://localhost:${PORT}`);
   console.log('Try:  curl http://localhost:' + PORT + '/api/v1/schools');

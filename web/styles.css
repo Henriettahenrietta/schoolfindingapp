@@ -136,6 +136,17 @@ main { padding: 18px 22px 60px; max-width: 1100px; margin: 0 auto; }
 .aside:hover { background: #eef5f5; }
 .aside.active { background: var(--teal); color: #fff; font-weight: 600; }
 .admin-content { flex: 1; min-width: 0; }
+.abadge { float: right; background: #cfe6e6; color: var(--teal-dark); border-radius: 999px; font-size: 11px; padding: 1px 7px; font-weight: 700; min-width: 18px; text-align: center; }
+.aside.active .abadge { background: rgba(255,255,255,.3); color: #fff; }
+.abadge.warn { background: var(--amber); color: #000; }
+.admin-head { margin-bottom: 6px; }
+.admin-head h2 { margin: 0 0 2px; }
+.stat-ic { font-size: 22px; margin-bottom: 2px; }
+.card-box { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 14px; }
+ul.plain { list-style: none; margin: 0; padding: 0; }
+ul.plain li { display: flex; justify-content: space-between; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: 14px; }
+ul.plain li:last-child { border-bottom: none; }
+.convo small { font-weight: 400; color: var(--muted); font-size: 11px; }
 
 /* Bar chart */
 .barchart { display: flex; align-items: flex-end; gap: 10px; height: 130px; padding: 8px 0; }

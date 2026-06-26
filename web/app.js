@@ -491,6 +491,19 @@ function loadAdmin() {
   const panel = document.getElementById('adminPanel');
   panel.innerHTML = '<p class="muted">Loading…</p>';
   ({ analytics: adminAnalytics, schools: adminSchools, users: adminUsers, reviews: adminReviews, messages: adminMessages }[adminSub] || adminAnalytics)(panel);
+  updateAdminBadges();
+}
+
+function setBadge(id, n, warn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = n > 0 ? n : '';
+  el.classList.toggle('warn', !!warn && n > 0);
+}
+async function updateAdminBadges() {
+  try { const a = await api('/admin/analytics'); setBadge('b-schools', a.totalSchools); setBadge('b-users', a.totalUsers); } catch (e) {}
+  try { const p = await api('/admin/reviews/pending'); setBadge('b-reviews', p.totalElements, true); } catch (e) {}
+  try { const c = await api('/admin/messages'); setBadge('b-messages', c.length); } catch (e) {}
 }
 
 async function adminAnalytics(panel) {
@@ -503,17 +516,23 @@ async function adminAnalytics(panel) {
       return `<div class="bar"><div class="bar-fill" style="height:${h}px" title="${d.count}"></div><div class="bar-x">${label}</div><div class="bar-n">${d.count}</div></div>`;
     }).join('');
     panel.innerHTML = `
-      <h2>Analytics</h2>
-      <div class="stat-grid">
-        <div class="stat"><div class="stat-n">${a.visitorsToday ?? 0}</div><div class="stat-l">Visitors today</div></div>
-        <div class="stat"><div class="stat-n">${a.totalSchools}</div><div class="stat-l">Universities</div></div>
-        <div class="stat"><div class="stat-n">${a.totalUsers}</div><div class="stat-l">Users</div></div>
-        <div class="stat"><div class="stat-n">${a.totalReviews}</div><div class="stat-l">Reviews</div></div>
+      <div class="admin-head">
+        <div><h2>Welcome back, ${esc((session()?.name || 'Admin').split(' ')[0])} 👋</h2><p class="muted">Here's what's happening on UniMatch Cameroon.</p></div>
       </div>
-      <div class="section-title">Visitors — last 7 days</div>
-      <div class="barchart">${bars}</div>
-      <div class="section-title">Universities by category</div>
-      <ul>${Object.entries(a.schoolsByCategory).map(([k, v]) => `<li>${esc(k)}: <b>${v}</b></li>`).join('')}</ul>`;
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-ic">👀</div><div class="stat-n">${a.visitorsToday ?? 0}</div><div class="stat-l">Visitors today</div></div>
+        <div class="stat"><div class="stat-ic">🏫</div><div class="stat-n">${a.totalSchools}</div><div class="stat-l">Universities</div></div>
+        <div class="stat"><div class="stat-ic">👥</div><div class="stat-n">${a.totalUsers}</div><div class="stat-l">Users</div></div>
+        <div class="stat"><div class="stat-ic">⭐</div><div class="stat-n">${a.totalReviews}</div><div class="stat-l">Reviews</div></div>
+      </div>
+      <div class="card-box">
+        <div class="section-title" style="margin-top:0">Visitors — last 7 days</div>
+        <div class="barchart">${bars}</div>
+      </div>
+      <div class="card-box">
+        <div class="section-title" style="margin-top:0">Universities by category</div>
+        <ul class="plain">${Object.entries(a.schoolsByCategory).map(([k, v]) => `<li><span>${esc(k)}</span><b>${v}</b></li>`).join('')}</ul>
+      </div>`;
   } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
 
@@ -521,13 +540,32 @@ async function adminAnalytics(panel) {
 let adminConvoId = null;
 async function adminMessages(panel) {
   try {
-    const convos = await api('/admin/messages');
-    const list = convos.length
-      ? convos.map((c) => `<button class="convo ${adminConvoId === c.studentId ? 'active' : ''}" onclick="adminOpenConvo(${c.studentId})"><b>${esc(c.studentName)}</b><span>${esc(c.lastText)}</span></button>`).join('')
-      : '<p class="muted">No messages yet.</p>';
-    panel.innerHTML = `<h2>Messages</h2><div class="msg-layout"><div class="convo-list">${list}</div><div id="convoThread" class="convo-thread"><p class="muted">Select a conversation.</p></div></div>`;
+    const [convos, users] = await Promise.all([api('/admin/messages'), api('/admin/users')]);
+    const convoMap = {};
+    convos.forEach((c) => { convoMap[c.studentId] = c; });
+    // All users are messageable; sort those with conversations (most recent) first.
+    const sorted = users.slice().sort((a, b) => {
+      const ca = convoMap[a.id], cb = convoMap[b.id];
+      if (ca && cb) return ca.lastAt < cb.lastAt ? 1 : -1;
+      if (ca) return -1;
+      if (cb) return 1;
+      return (a.displayName || a.email || '').localeCompare(b.displayName || b.email || '');
+    });
+    const list = sorted.map((u) => {
+      const c = convoMap[u.id];
+      const preview = c ? esc(c.lastText) : 'No messages yet — start a chat';
+      return `<button class="convo ${adminConvoId === u.id ? 'active' : ''}" onclick="adminOpenConvo(${u.id})"><b>${esc(u.displayName || u.email || ('User ' + u.id))} <small>${esc(u.role)}</small></b><span>${preview}</span></button>`;
+    }).join('');
+    panel.innerHTML = `<h2>Messages</h2><p class="muted">Pick any user to message them — students see your reply in their dashboard.</p>
+      <div class="msg-layout"><div class="convo-list">${list}</div><div id="convoThread" class="convo-thread"><p class="muted">Select a user to start or continue a conversation.</p></div></div>`;
     if (adminConvoId != null) adminOpenConvo(adminConvoId);
   } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
+}
+
+function adminMessageUser(userId) {
+  adminSub = 'messages';
+  adminConvoId = userId;
+  loadAdmin();
 }
 async function adminOpenConvo(studentId) {
   adminConvoId = studentId;
@@ -537,8 +575,8 @@ async function adminOpenConvo(studentId) {
   try {
     const msgs = await api('/admin/messages/' + studentId);
     thread.innerHTML = `
-      <div class="bubbles">${msgs.map(bubbleHtml).join('')}</div>
-      <div class="msg-compose"><input id="adminMsgText" placeholder="Reply…"><button class="btn primary" id="adminMsgSend">Send</button></div>`;
+      <div class="bubbles">${msgs.length ? msgs.map(bubbleHtml).join('') : '<p class="muted">No messages yet — send the first one.</p>'}</div>
+      <div class="msg-compose"><input id="adminMsgText" placeholder="Type a message…"><button class="btn primary" id="adminMsgSend">Send</button></div>`;
     const send = async () => {
       const t = document.getElementById('adminMsgText').value.trim();
       if (!t) return;
@@ -651,6 +689,7 @@ async function adminUsers(panel) {
   try {
     const list = await api('/admin/users');
     const rows = list.map((u) => `<tr><td>${u.id}</td><td>${esc(u.displayName || '')}</td><td>${esc(u.email || '')}</td><td>${u.role}</td><td>${u.active ? '✅' : '🚫'}</td><td>
+      <button class="btn" onclick="adminMessageUser(${u.id})">Message</button>
       <button class="btn" onclick="adminSetRole(${u.id},'${u.role === 'ADMIN' ? 'STUDENT' : 'ADMIN'}')">${u.role === 'ADMIN' ? 'Make student' : 'Make admin'}</button>
       <button class="btn" onclick="adminSetActive(${u.id},${!u.active})">${u.active ? 'Deactivate' : 'Activate'}</button></td></tr>`).join('');
     panel.innerHTML = `<div class="section-title">Users (${list.length})</div><div class="tablewrap"><table class="atable"><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Active</th><th></th></tr>${rows}</table></div>`;

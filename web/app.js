@@ -932,31 +932,31 @@ ensureGeo(); // ask for location up-front so distances show automatically
 recordVisit('home'); // record this visit
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(() => {}); // installable PWA
 
-// ---------- first-visit "Install app?" prompt ----------
+// ---------- "Install app?" prompt — shows on EVERY visit until the app is installed ----------
 let deferredInstall = null;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; });
-window.addEventListener('appinstalled', () => { localStorage.setItem('pwaPromptSeen', '1'); document.getElementById('installBanner').classList.add('hidden'); });
+window.addEventListener('appinstalled', () => { localStorage.setItem('pwaInstalled', '1'); document.getElementById('installBanner').classList.add('hidden'); });
 
 function isStandalone() {
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
+function appInstalled() {
+  return isStandalone() || localStorage.getItem('pwaInstalled') === '1';
+}
 function maybeShowInstallBanner() {
-  if (isStandalone() || localStorage.getItem('pwaPromptSeen')) return; // installed or already asked
-  document.getElementById('installBanner').classList.remove('hidden');
+  // Keep prompting every visit until the app is actually installed on this device.
+  if (!appInstalled()) document.getElementById('installBanner').classList.remove('hidden');
 }
 document.getElementById('ibInstall').onclick = async () => {
   if (deferredInstall) {
     deferredInstall.prompt();
-    try { await deferredInstall.userChoice; } catch (e) {}
+    try { const r = await deferredInstall.userChoice; if (r && r.outcome === 'accepted') localStorage.setItem('pwaInstalled', '1'); } catch (e) {}
     deferredInstall = null;
   } else {
     toast('Open your browser menu (⋮) and tap "Add to Home screen" / "Install app".');
   }
-  localStorage.setItem('pwaPromptSeen', '1');
   document.getElementById('installBanner').classList.add('hidden');
 };
-document.getElementById('ibClose').onclick = () => {
-  localStorage.setItem('pwaPromptSeen', '1');
-  document.getElementById('installBanner').classList.add('hidden');
-};
-setTimeout(maybeShowInstallBanner, 2500); // ask on first visit
+// "Not now" just dismisses for this visit — it will ask again next time (until installed).
+document.getElementById('ibClose').onclick = () => document.getElementById('installBanner').classList.add('hidden');
+setTimeout(maybeShowInstallBanner, 2500);

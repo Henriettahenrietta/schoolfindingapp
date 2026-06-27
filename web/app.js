@@ -948,15 +948,26 @@ function maybeShowInstallBanner() {
   // Keep prompting every visit until the app is actually installed on this device.
   if (!appInstalled()) document.getElementById('installBanner').classList.remove('hidden');
 }
+function showInstallHelp() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+  document.getElementById('installHelpBody').innerHTML = isIOS
+    ? '<p>Add UniMatch to your iPhone home screen:</p><ol><li>Tap the <b>Share</b> button (square with an up-arrow) at the bottom of Safari.</li><li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol>'
+    : '<p>Add UniMatch to your home screen:</p><ol><li>Tap the browser <b>menu</b> (⋮ or ☰, usually top-right).</li><li>Tap <b>Install app</b> — or <b>Add to Home screen</b> / <b>Add page to → Home screen</b>.</li><li>Confirm <b>Install</b> / <b>Add</b>.</li></ol><p class="muted">Tip: Chrome and Samsung Internet support one-tap install.</p>';
+  document.getElementById('installHelp').classList.remove('hidden');
+}
+document.getElementById('installHelpClose').onclick = () => document.getElementById('installHelp').classList.add('hidden');
+document.getElementById('installHelp').onclick = (e) => { if (e.target.id === 'installHelp') document.getElementById('installHelp').classList.add('hidden'); };
+
 document.getElementById('ibInstall').onclick = async () => {
+  document.getElementById('installBanner').classList.add('hidden');
   if (deferredInstall) {
     deferredInstall.prompt();
     try { const r = await deferredInstall.userChoice; if (r && r.outcome === 'accepted') localStorage.setItem('pwaInstalled', '1'); } catch (e) {}
     deferredInstall = null;
   } else {
-    toast('Open your browser menu (⋮) and tap "Add to Home screen" / "Install app".');
+    showInstallHelp(); // browser didn't offer native install → show clear steps
   }
-  document.getElementById('installBanner').classList.add('hidden');
 };
 // "Not now" just dismisses for this visit — it will ask again next time (until installed).
 document.getElementById('ibClose').onclick = () => document.getElementById('installBanner').classList.add('hidden');

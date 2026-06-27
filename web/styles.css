@@ -306,6 +306,8 @@ table.compare td.best { background: #e9f8ee; font-weight: 600; }
 .ib-text b { font-size: 14px; }
 .ib-text span { font-size: 12px; color: var(--muted); }
 .ib-actions { display: flex; gap: 6px; flex-shrink: 0; }
+#installHelpBody ol { padding-left: 20px; line-height: 1.8; margin: 8px 0; }
+#installHelpBody li { margin-bottom: 4px; }
 @media (max-width: 460px) {
   .install-banner { flex-wrap: wrap; }
   .ib-actions { width: 100%; }

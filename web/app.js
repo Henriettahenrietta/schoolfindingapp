@@ -1,8 +1,9 @@
-// API location: explicit window.API_BASE (e.g. on Netlify) wins; otherwise same-origin
-// (combined server / Render), or :8080 for the 2-server local dev setup.
-const API = (window.API_BASE && window.API_BASE.trim())
-  ? window.API_BASE.replace(/\/$/, '') + '/api/v1'
-  : (location.port === '3000' ? 'http://localhost:8080/api/v1' : '/api/v1');
+// API location: locally use the local server; when deployed use window.API_BASE (the live
+// Render backend) if set, else same-origin.
+const isLocalHost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const API = isLocalHost
+  ? (location.port === '3000' ? 'http://localhost:8080/api/v1' : '/api/v1')
+  : ((window.API_BASE && window.API_BASE.trim()) ? window.API_BASE.replace(/\/$/, '') + '/api/v1' : '/api/v1');
 
 // ---------- session (dev auth, mirrors the backend X-Debug-* convention) ----------
 const PRESETS = {

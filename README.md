@@ -21,18 +21,16 @@ This is a **monorepo**:
 
 ## ▶ Run the app (easiest — only needs Node.js)
 
-The full UI runs as a web app backed by a lightweight Node server. On any machine with
-**[Node.js 18+](https://nodejs.org)** installed:
+The full UI runs as a web app served by a lightweight Node server (API + UI on one port).
+On any machine with **[Node.js 18+](https://nodejs.org)** installed:
 
 ```bash
 npm start
 ```
 
-This launches **both** servers (API on `http://localhost:8080`, web on `http://localhost:3000`).
-Then open **http://localhost:3000**.
+Then open **http://localhost:8080**. That's it — one command, one URL.
 
-> Prefer two terminals? `npm run api` in one and `npm run web` in another.
-> Always open **http://localhost:3000** (not `127.0.0.1`) so Google sign-in works.
+> Open **localhost** (not `127.0.0.1`) so Google sign-in works.
 
 ### Signing in
 - **Demo (always works):** Sign in → *Use a demo account* → **Continue as admin / student**.
@@ -42,6 +40,21 @@ Then open **http://localhost:3000**.
 
 If Google sign-in ever errors, just use **Use a demo account → Continue as admin** — authentication
 always works via the demo path.
+
+## 📱 Use it on your phone (installable app / PWA)
+
+The web app is a **PWA**, so it installs to your home screen and runs full-screen like a native app.
+
+1. **Deploy it** so your phone can reach it: render.com → **New ▸ Blueprint** ▸ pick this repo ▸
+   **Apply** (uses `render.yaml`). You get a public URL like `https://unimatch-cameroon.onrender.com`.
+2. **Open that URL on your phone's browser.**
+3. **Install it:**
+   - **Android (Chrome):** menu **⋮ → Add to Home screen / Install app**.
+   - **iPhone (Safari):** **Share → Add to Home Screen**.
+4. A **UniMatch** icon appears on your home screen — tap it to open the app.
+
+> After deploying, add your Render domain to **Firebase → Authentication → Settings →
+> Authorized domains** so Google sign-in works there (demo sign-in works regardless).
 
 ## Quick start (real backend, no local Java needed)
 

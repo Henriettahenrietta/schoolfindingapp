@@ -1,0 +1,28 @@
+# Render.com blueprint for the REAL Kotlin/Spring backend + PostgreSQL (the SRS backend).
+# This is separate from render.yaml (which deploys the lightweight Node app used by the phone PWA).
+# To use this one, point Render at this file, or rename it to render.yaml before creating the Blueprint.
+databases:
+  - name: schoolfinder-db
+    databaseName: schoolfinder
+    user: schoolfinder
+    plan: free
+
+services:
+  - type: web
+    name: schoolfinder-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: schoolfinder-db
+          property: connectionString
+      - key: FIREBASE_ENABLED
+        value: "false"
+      - key: CLOUDINARY_URL
+        value: ""
+      - key: GOOGLE_MAPS_API_KEY
+        value: ""

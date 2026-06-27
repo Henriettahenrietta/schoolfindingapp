@@ -15,6 +15,17 @@ import { fileURLToPath } from 'node:url';
 
 const PORT = process.env.PORT || 8080;
 
+// Serve the web UI from this same server (one origin = API + app), used locally and when deployed.
+const WEB_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'web');
+const joinWeb = (rel) => path.join(WEB_DIR, rel);
+const extOf = (f) => path.extname(f);
+const WEB_TYPES = {
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon',
+  '.json': 'application/json', '.webmanifest': 'application/manifest+json',
+};
+
 // Persist chat (and the users who sent it) to disk so old messages survive restarts.
 const STORE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'chat-store.json');
 function saveStore() {
@@ -670,11 +681,21 @@ const server = http.createServer(async (req, res) => {
     return send(res, 204);
   }
 
+  // Static web app (one server serves the API + the UI)
+  if (method === 'GET' && !path.startsWith('/api/') && !path.startsWith('/actuator/')) {
+    const rel = (path === '/' || path === '') ? 'index.html' : path.replace(/^\/+/, '');
+    const filePath = joinWeb(rel);
+    if (filePath.startsWith(WEB_DIR) && existsSync(filePath)) {
+      res.writeHead(200, { 'Content-Type': WEB_TYPES[extOf(filePath)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+      return res.end(readFileSync(filePath));
+    }
+  }
+
   return send(res, 404, { message: `No route for ${method} ${path}` });
 });
 
 loadStore();
 server.listen(PORT, () => {
-  console.log(`School Finder dev server (Node stand-in) listening on http://localhost:${PORT}`);
-  console.log('Try:  curl http://localhost:' + PORT + '/api/v1/schools');
+  console.log(`UniMatch Cameroon running on http://localhost:${PORT}  (API + web app)`);
+  console.log('Open that URL in your browser.');
 });

@@ -1,30 +1,26 @@
-# Render.com blueprint — deploys the School Finder backend + a PostgreSQL database.
-# Deploy: sign in to https://render.com with the GitHub account that owns this repo,
-# then New ▸ Blueprint ▸ pick this repo. Render builds backend/Dockerfile on its own
-# infrastructure (fast network) and gives you a live https URL.
-databases:
-  - name: schoolfinder-db
-    databaseName: schoolfinder
-    user: schoolfinder
-    plan: free
-
+# Render.com blueprint — deploys the UniMatch Cameroon app (full UI + API) as ONE Node web service.
+#
+# Deploy (gives you a public https URL to use on your phone):
+#   1. https://render.com → sign in with GitHub.
+#   2. New ▸ Blueprint ▸ pick this repo ▸ Apply.
+#   3. Wait for the build → you get a URL like https://unimatch-cameroon.onrender.com
+#   4. Open that URL on your phone → browser menu ▸ "Add to Home Screen" → installs as an app.
+#
+# (The Kotlin/Spring + PostgreSQL backend deploys separately — see render-backend.yaml.)
 services:
   - type: web
-    name: schoolfinder-api
-    runtime: docker
+    name: unimatch-cameroon
+    runtime: node
     plan: free
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    buildCommand: ""
+    startCommand: node tools/mock-server.mjs
     healthCheckPath: /actuator/health
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: schoolfinder-db
-          property: connectionString
-      # External services run in placeholder/dev mode until you add real keys.
-      - key: FIREBASE_ENABLED
-        value: "false"
+      - key: NODE_VERSION
+        value: "20"
+      # Optional: set CLOUDINARY_URL to enable real image uploads. Leave blank otherwise.
       - key: CLOUDINARY_URL
         value: ""
-      - key: GOOGLE_MAPS_API_KEY
-        value: ""
+      # Optional: emails that should be admins when they sign in.
+      - key: ADMIN_EMAILS
+        value: "superadmin@unimatch.cm"

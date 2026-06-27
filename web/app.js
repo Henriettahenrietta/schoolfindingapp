@@ -1,4 +1,5 @@
-const API = 'http://localhost:8080/api/v1';
+// Same-origin when served by the combined server / when deployed; cross-port for the 2-server dev setup.
+const API = (location.port === '3000') ? 'http://localhost:8080/api/v1' : '/api/v1';
 
 // ---------- session (dev auth, mirrors the backend X-Debug-* convention) ----------
 const PRESETS = {
@@ -881,3 +882,4 @@ saveCompare();
 loadSchools();
 ensureGeo(); // ask for location up-front so distances show automatically
 fetch(API + '/visit', { method: 'POST' }).catch(() => {}); // record a daily visit
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(() => {}); // installable PWA

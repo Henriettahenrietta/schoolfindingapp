@@ -147,12 +147,22 @@ function renderAuth() {
   }
 }
 
+function fbError(e) {
+  const c = (e && e.code) || '';
+  if (c.includes('unauthorized-domain')) return "This site isn't authorised in Firebase yet. Add this domain under Authentication → Settings → Authorised domains — or just use a demo account below.";
+  if (c.includes('configuration-not-found') || c.includes('operation-not-allowed')) return 'Enable this sign-in method in Firebase → Authentication → Sign-in method — or use a demo account below.';
+  if (c.includes('popup-blocked')) return 'Your browser blocked the sign-in popup. Allow popups and retry, or use a demo account.';
+  if (c.includes('popup-closed') || c.includes('cancelled-popup')) return 'Sign-in was cancelled.';
+  if (c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found')) return 'Wrong email/password, or the account does not exist — use the Create account tab first.';
+  return (e && e.message) || 'Sign-in failed.';
+}
+
 async function fbGoogle() {
   const err = document.getElementById('aErr');
   try {
     await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
     closeAuth();
-  } catch (e) { if (err) err.textContent = e.message; else toast(e.message); }
+  } catch (e) { const m = fbError(e); if (err) err.textContent = m; else toast(m); }
 }
 
 async function fbAuth(register) {
@@ -165,7 +175,7 @@ async function fbAuth(register) {
     if (register) await firebase.auth().createUserWithEmailAndPassword(email, pass);
     else await firebase.auth().signInWithEmailAndPassword(email, pass);
     closeAuth();
-  } catch (e) { if (err) err.textContent = e.message; else toast(e.message); }
+  } catch (e) { const m = fbError(e); if (err) err.textContent = m; else toast(m); }
 }
 
 function doSignOut() {

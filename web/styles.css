@@ -58,6 +58,8 @@ body {
 .auth-inp { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; margin-bottom: 10px; }
 .auth-submit { width: 100%; padding: 11px; font-size: 15px; margin-top: 4px; }
 .auth-err { color: #b91c1c; font-size: 13px; margin-top: 10px; min-height: 16px; }
+.auth-demo { text-align: center; margin-top: 12px; }
+.linkbtn { background: none; border: none; color: var(--teal); cursor: pointer; font-size: 13px; text-decoration: underline; padding: 4px; }
 
 .tabs { display: flex; gap: 4px; padding: 10px 22px 0; background: var(--bg); position: sticky; top: 0; z-index: 5; }
 .tab {

@@ -19,7 +19,31 @@ This is a **monorepo**:
 - **Registered Student** — rate, review, and save favourites.
 - **Administrator** — manage schools, users, reviews, and view analytics.
 
-## Quick start (backend, no local Java needed)
+## ▶ Run the app (easiest — only needs Node.js)
+
+The full UI runs as a web app backed by a lightweight Node server. On any machine with
+**[Node.js 18+](https://nodejs.org)** installed:
+
+```bash
+npm start
+```
+
+This launches **both** servers (API on `http://localhost:8080`, web on `http://localhost:3000`).
+Then open **http://localhost:3000**.
+
+> Prefer two terminals? `npm run api` in one and `npm run web` in another.
+> Always open **http://localhost:3000** (not `127.0.0.1`) so Google sign-in works.
+
+### Signing in
+- **Demo (always works):** Sign in → *Use a demo account* → **Continue as admin / student**.
+- **Real Firebase (Google + email/password):** already wired (`web/firebase-config.js`). In the
+  [Firebase console](https://console.firebase.google.com) for project `unimatch-42d8b`, enable
+  **Authentication → Sign-in method → Google + Email/Password**. Admin email: `superadmin@unimatch.cm`.
+
+If Google sign-in ever errors, just use **Use a demo account → Continue as admin** — authentication
+always works via the demo path.
+
+## Quick start (real backend, no local Java needed)
 
 The backend runs entirely in Docker — you only need Docker Desktop.
 

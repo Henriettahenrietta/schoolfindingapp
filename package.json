@@ -1,0 +1,15 @@
+{
+  "name": "unimatch-cameroon",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "UniMatch Cameroon — find your future university. Run both local servers with `npm start`.",
+  "scripts": {
+    "start": "node tools/start.mjs",
+    "api": "node tools/mock-server.mjs",
+    "web": "node tools/web-server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

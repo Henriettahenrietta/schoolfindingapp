@@ -107,12 +107,14 @@ function renderIdentity() {
 
 // ---------- auth modal ----------
 let authMode = 'signin';
-function openAuth() { document.getElementById('authModal').classList.remove('hidden'); renderAuth(); }
+let authView = null; // 'firebase' | 'demo' | null (auto)
+function openAuth() { authView = null; document.getElementById('authModal').classList.remove('hidden'); renderAuth(); }
 function closeAuth() { document.getElementById('authModal').classList.add('hidden'); }
 
 function renderAuth() {
   const body = document.getElementById('authBody');
-  if (FB_ENABLED()) {
+  const showDemo = authView === 'demo' || !FB_ENABLED();
+  if (!showDemo) {
     body.innerHTML = `
       <div class="auth-tabs">
         <button class="atab ${authMode === 'signin' ? 'active' : ''}" data-m="signin">Sign in</button>
@@ -123,17 +125,21 @@ function renderAuth() {
       <input id="aEmail" type="email" placeholder="Email" class="auth-inp" autocomplete="email">
       <input id="aPass" type="password" placeholder="Password (6+ characters)" class="auth-inp" autocomplete="current-password">
       <button class="btn primary auth-submit" id="aSubmit">${authMode === 'signin' ? 'Sign in' : 'Create account'}</button>
-      <div id="aErr" class="auth-err"></div>`;
+      <div id="aErr" class="auth-err"></div>
+      <div class="auth-demo"><button class="linkbtn" id="aDemo">Use a demo account instead</button></div>`;
     body.querySelectorAll('.atab').forEach((b) => (b.onclick = () => { authMode = b.dataset.m; renderAuth(); }));
     document.getElementById('aGoogle').onclick = fbGoogle;
     document.getElementById('aSubmit').onclick = () => fbAuth(authMode === 'signup');
     document.getElementById('aPass').onkeydown = (e) => { if (e.key === 'Enter') fbAuth(authMode === 'signup'); };
+    document.getElementById('aDemo').onclick = () => { authView = 'demo'; renderAuth(); };
   } else {
     body.innerHTML = `
-      <p class="muted">Demo sign-in. (Add your Firebase config in <code>web/firebase-config.js</code> to enable real Google / email accounts.)</p>
+      <p class="muted">Quick demo sign-in — no account needed.</p>
       <button class="btn primary auth-submit" data-as="student">Continue as student</button>
-      <button class="btn auth-submit" data-as="admin">Continue as admin</button>`;
+      <button class="btn auth-submit" data-as="admin">Continue as admin</button>
+      ${FB_ENABLED() ? '<div class="auth-demo"><button class="linkbtn" id="aBack">← Back to Google / email sign-in</button></div>' : ''}`;
     body.querySelectorAll('button[data-as]').forEach((b) => (b.onclick = () => { setSession(PRESETS[b.dataset.as]); closeAuth(); }));
+    if (FB_ENABLED()) document.getElementById('aBack').onclick = () => { authView = 'firebase'; renderAuth(); };
   }
 }
 

@@ -210,7 +210,7 @@ async function loadSchools() {
     meta.textContent = `${page.totalElements} school(s) found`;
     results.innerHTML = page.content.length ? page.content.map(cardHtml).join('') : '<div class="empty">No schools match your filters.</div>';
   } catch (e) {
-    results.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}<br><small>Is the API server running on :8080?</small></div>`;
+    results.innerHTML = `<div class="empty">⚠️ Couldn't reach the server (${esc(e.message)}).<br><small>The API isn't connected yet — see deployment notes.</small></div>`;
   }
 }
 

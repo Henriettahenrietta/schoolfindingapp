@@ -1,8 +1,5 @@
 plugins {
-    val kotlinVersion = "1.9.25"
-    kotlin("jvm") version kotlinVersion
-    kotlin("plugin.spring") version kotlinVersion
-    kotlin("plugin.jpa") version kotlinVersion
+    java
     id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.6"
 }
@@ -23,9 +20,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
@@ -38,24 +32,15 @@ dependencies {
     // Cloudinary image hosting/gallery. Active when CLOUDINARY_URL is set.
     implementation("com.cloudinary:cloudinary-http44:1.39.0")
 
+    // Lombok (getters/setters/constructors for entities)
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+
     // H2 powers the lightweight `local` profile (in-memory DB, no PostgreSQL needed).
     runtimeOnly("com.h2database:h2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
-    }
-}
-
-// Allow JPA entities (open classes / no-arg constructors) for Kotlin
-allOpen {
-    annotation("jakarta.persistence.Entity")
-    annotation("jakarta.persistence.MappedSuperclass")
-    annotation("jakarta.persistence.Embeddable")
 }
 
 tasks.withType<Test> {

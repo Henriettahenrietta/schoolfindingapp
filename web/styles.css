@@ -292,3 +292,22 @@ table.compare td.best { background: #e9f8ee; font-weight: 600; }
 .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: #1a2222; color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 14px; z-index: 60; }
 .link { color: var(--teal); text-decoration: none; }
 .empty { padding: 40px; text-align: center; color: var(--muted); }
+
+/* First-visit install prompt */
+.install-banner {
+  position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 70;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.22); padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px; max-width: 460px; margin: 0 auto;
+}
+.install-banner.hidden { display: none; }
+.ib-icon { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; }
+.ib-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ib-text b { font-size: 14px; }
+.ib-text span { font-size: 12px; color: var(--muted); }
+.ib-actions { display: flex; gap: 6px; flex-shrink: 0; }
+@media (max-width: 460px) {
+  .install-banner { flex-wrap: wrap; }
+  .ib-actions { width: 100%; }
+  .ib-actions .btn { flex: 1; }
+}

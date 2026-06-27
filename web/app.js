@@ -66,6 +66,8 @@ const fmtMoney = (n, c) => (n == null ? 'N/A' : new Intl.NumberFormat('en-US').f
 const stars = (avg) => '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg));
 const catLabel = (c) => ({ UNIVERSITY: 'University', HIGH_SCHOOL: 'High School', SECONDARY: 'Secondary', VOCATIONAL: 'Vocational', PRIMARY: 'Primary' }[c] || c);
 const esc = (s) => (s == null ? '' : String(s).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m])));
+const pageLabel = (p) => ({ home: 'Home', discover: 'Discover', compare: 'Compare', favorites: 'Favourites', student: 'My Dashboard', admin: 'Admin' }[p] || p);
+function fmtTime(iso) { try { return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; } }
 
 // ---------- toast ----------
 let toastT;
@@ -568,6 +570,20 @@ async function adminAnalytics(panel) {
       <div class="card-box">
         <div class="section-title" style="margin-top:0">Universities by category</div>
         <ul class="plain">${Object.entries(a.schoolsByCategory).map(([k, v]) => `<li><span>${esc(k)}</span><b>${v}</b></li>`).join('')}</ul>
+      </div>
+      <div class="card-box">
+        <div class="section-title" style="margin-top:0">📍 Visitor locations</div>
+        ${(a.topPlaces || []).length ? `<ul class="plain">${a.topPlaces.map((p) => `<li><span>${esc(p.place)}</span><b>${p.count}</b></li>`).join('')}</ul>` : '<p class="muted">No location data yet — visitors are asked to allow location.</p>'}
+      </div>
+      <div class="card-box">
+        <div class="section-title" style="margin-top:0">Pages visited (${a.totalVisits || 0} total views)</div>
+        ${(a.topPages || []).length ? `<ul class="plain">${a.topPages.map((p) => `<li><span>${esc(pageLabel(p.page))}</span><b>${p.count}</b></li>`).join('')}</ul>` : '<p class="muted">No page views yet.</p>'}
+      </div>
+      <div class="card-box">
+        <div class="section-title" style="margin-top:0">Recent visitor activity</div>
+        <div class="tablewrap"><table class="atable"><tr><th>Time</th><th>Page</th><th>Location</th><th>Who</th></tr>
+        ${(a.recentVisits || []).length ? a.recentVisits.map((v) => `<tr><td>${esc(fmtTime(v.at))}</td><td>${esc(pageLabel(v.page))}</td><td>${esc(v.place || '—')}</td><td>${esc(v.who || 'Guest')}</td></tr>`).join('') : '<tr><td colspan="4" class="muted">No visits recorded yet.</td></tr>'}
+        </table></div>
       </div>`;
   } catch (e) { panel.innerHTML = `<div class="empty">⚠️ ${esc(e.message)}</div>`; }
 }
@@ -807,13 +823,29 @@ async function adminReviews(panel) {
 }
 async function adminModerate(id, status) { try { await api(`/admin/reviews/${id}/status?status=${status}`, { method: 'PUT' }); toast('Review ' + status.toLowerCase()); loadAdmin(); } catch (e) { toast(e.message); } }
 
-// ---------- student dashboard ----------
+// ---------- student dashboard + visit tracking ----------
 let userPos = null;
+let visitorPlace = null;
+async function reverseGeocode(pos) {
+  if (visitorPlace) return;
+  try {
+    const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.lat}&longitude=${pos.lng}&localityLanguage=en`);
+    const j = await r.json();
+    visitorPlace = [j.city || j.locality, j.countryName].filter(Boolean).join(', ') || null;
+  } catch (e) { /* ignore */ }
+}
+function recordVisit(page) {
+  const body = { page: page || currentView || 'home' };
+  if (userPos) { body.lat = userPos.lat; body.lng = userPos.lng; body.place = visitorPlace; }
+  fetch(API + '/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
+}
 function ensureGeo() {
   if (userPos || !navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(
-    (pos) => {
+    async (pos) => {
       userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      await reverseGeocode(userPos);
+      recordVisit(currentView); // re-log this visit now that we know the location
       // Refresh whatever's on screen so distances appear automatically.
       if (currentView === 'student') loadStudent();
       else if (currentView === 'discover') loadSchools();
@@ -880,6 +912,7 @@ function showView(v) {
   if (v === 'favorites') loadFavorites();
   if (v === 'admin') loadAdmin();
   if (v === 'student') loadStudent();
+  recordVisit(v); // track the page the visitor is on
 }
 
 // ---------- init ----------
@@ -896,5 +929,34 @@ renderIdentity();
 saveCompare();
 loadSchools();
 ensureGeo(); // ask for location up-front so distances show automatically
-fetch(API + '/visit', { method: 'POST' }).catch(() => {}); // record a daily visit
+recordVisit('home'); // record this visit
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(() => {}); // installable PWA
+
+// ---------- first-visit "Install app?" prompt ----------
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstall = e; });
+window.addEventListener('appinstalled', () => { localStorage.setItem('pwaPromptSeen', '1'); document.getElementById('installBanner').classList.add('hidden'); });
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function maybeShowInstallBanner() {
+  if (isStandalone() || localStorage.getItem('pwaPromptSeen')) return; // installed or already asked
+  document.getElementById('installBanner').classList.remove('hidden');
+}
+document.getElementById('ibInstall').onclick = async () => {
+  if (deferredInstall) {
+    deferredInstall.prompt();
+    try { await deferredInstall.userChoice; } catch (e) {}
+    deferredInstall = null;
+  } else {
+    toast('Open your browser menu (⋮) and tap "Add to Home screen" / "Install app".');
+  }
+  localStorage.setItem('pwaPromptSeen', '1');
+  document.getElementById('installBanner').classList.add('hidden');
+};
+document.getElementById('ibClose').onclick = () => {
+  localStorage.setItem('pwaPromptSeen', '1');
+  document.getElementById('installBanner').classList.add('hidden');
+};
+setTimeout(maybeShowInstallBanner, 2500); // ask on first visit

@@ -27,19 +27,49 @@ const WEB_TYPES = {
 };
 
 // Persist chat (and the users who sent it) to disk so old messages survive restarts.
+// Persistence: Firebase Realtime Database (survives restarts/redeploys) when FIREBASE_DB_URL is
+// set; otherwise a local JSON file. Stores everything mutable so old data always loads back.
+const DB_URL = process.env.FIREBASE_DB_URL ? process.env.FIREBASE_DB_URL.replace(/\/+$/, '') : null;
 const STORE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'chat-store.json');
-function saveStore() {
-  try { writeFileSync(STORE, JSON.stringify({ users, messages, seq }), 'utf8'); } catch (e) { /* ignore */ }
+
+function snapshot() {
+  return { users, messages, reviews, favorites, visits, visitsByDay, programImages, uploadedImages, seq };
 }
-function loadStore() {
+function applyStore(d) {
+  if (!d || typeof d !== 'object') return;
+  if (Array.isArray(d.messages)) { messages.length = 0; messages.push(...d.messages); }
+  if (Array.isArray(d.users)) d.users.forEach((su) => { if (!users.find((u) => u.firebaseUid === su.firebaseUid)) users.push(su); });
+  if (Array.isArray(d.reviews)) reviews = d.reviews;
+  if (Array.isArray(d.favorites)) favorites = d.favorites;
+  if (Array.isArray(d.visits)) { visits.length = 0; visits.push(...d.visits); }
+  if (d.visitsByDay) Object.assign(visitsByDay, d.visitsByDay);
+  if (d.programImages) Object.assign(programImages, d.programImages);
+  if (d.uploadedImages) Object.assign(uploadedImages, d.uploadedImages);
+  if (d.seq) Object.assign(seq, d.seq);
+}
+async function loadStore() {
   try {
-    if (!existsSync(STORE)) return;
-    const d = JSON.parse(readFileSync(STORE, 'utf8'));
-    if (Array.isArray(d.messages)) messages.push(...d.messages);
-    if (Array.isArray(d.users)) d.users.forEach((su) => { if (!users.find((u) => u.firebaseUid === su.firebaseUid)) users.push(su); });
-    if (d.seq) Object.assign(seq, d.seq);
-    console.log(`Loaded ${messages.length} stored message(s).`);
+    let raw = null;
+    if (DB_URL) {
+      const r = await fetch(`${DB_URL}/store.json`);
+      if (r.ok) { const v = await r.json(); raw = typeof v === 'string' ? v : (v ? JSON.stringify(v) : null); }
+    } else if (existsSync(STORE)) {
+      raw = readFileSync(STORE, 'utf8');
+    }
+    if (raw) { applyStore(JSON.parse(raw)); console.log(`Loaded store: ${messages.length} message(s), ${visits.length} visit(s).`); }
   } catch (e) { /* ignore */ }
+}
+let saveTimer = null;
+function saveStore() {
+  if (saveTimer) return; // debounce bursts
+  saveTimer = setTimeout(async () => {
+    saveTimer = null;
+    const payload = JSON.stringify(snapshot());
+    try {
+      if (DB_URL) await fetch(`${DB_URL}/store.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      else writeFileSync(STORE, payload, 'utf8');
+    } catch (e) { /* ignore */ }
+  }, 700);
 }
 
 // Cloudinary credentials from env (never hard-coded). Supports CLOUDINARY_URL
@@ -84,6 +114,8 @@ const uploadedImages = {};
 const programImages = {};
 // Visitor counts per day: 'YYYY-MM-DD' -> count.
 const visitsByDay = {};
+// Detailed visit log: { at, page, place, lat, lng } — for the admin "visitor activity" view.
+const visits = [];
 // Messages between students and admins: { id, studentId, sender: 'STUDENT'|'ADMIN', text, createdAt }.
 const messages = [];
 
@@ -360,6 +392,7 @@ function readBody(req) {
 
 // ----------------------------- Router -----------------------------
 export async function handler(req, res) {
+  await storeReady; // ensure persisted data (messages, visits, …) is loaded before serving
   const u = new URL(req.url, `http://localhost:${PORT}`);
   const path = u.pathname;
   const q = u.searchParams;
@@ -517,6 +550,18 @@ export async function handler(req, res) {
   if (path === '/api/v1/visit' && method === 'POST') {
     const day = new Date().toISOString().slice(0, 10);
     visitsByDay[day] = (visitsByDay[day] || 0) + 1;
+    const body = await readBody(req);
+    const me = currentUser(req);
+    visits.push({
+      at: new Date().toISOString(),
+      page: body.page || 'home',
+      place: body.place || null,
+      lat: body.lat ?? null,
+      lng: body.lng ?? null,
+      who: me ? (me.displayName || me.email || me.role) : 'Guest',
+    });
+    if (visits.length > 400) visits.splice(0, visits.length - 400);
+    saveStore();
     return send(res, 204);
   }
 
@@ -532,6 +577,12 @@ export async function handler(req, res) {
       last7.push({ day: d, count: visitsByDay[d] || 0 });
     }
     const todayKey = today.toISOString().slice(0, 10);
+    const placeCounts = {};
+    visits.forEach((v) => { if (v.place) placeCounts[v.place] = (placeCounts[v.place] || 0) + 1; });
+    const topPlaces = Object.entries(placeCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([place, count]) => ({ place, count }));
+    const pageCounts = {};
+    visits.forEach((v) => { pageCounts[v.page] = (pageCounts[v.page] || 0) + 1; });
+    const topPages = Object.entries(pageCounts).sort((a, b) => b[1] - a[1]).map(([page, count]) => ({ page, count }));
     return send(res, 200, {
       totalSchools: schools.length,
       totalUsers: users.length,
@@ -539,6 +590,10 @@ export async function handler(req, res) {
       schoolsByCategory: byCat,
       visitorsToday: visitsByDay[todayKey] || 0,
       visitorsByDay: last7,
+      totalVisits: visits.length,
+      recentVisits: visits.slice(-25).reverse(),
+      topPlaces,
+      topPages,
     });
   }
 
@@ -699,7 +754,7 @@ export async function handler(req, res) {
   return send(res, 404, { message: `No route for ${method} ${path}` });
 }
 
-loadStore();
+const storeReady = loadStore();
 // Start a standalone HTTP server only when run directly (locally / on Render / Koyeb).
 // When imported by a serverless function (Vercel), we just export `handler` and don't listen.
 if (!process.env.VERCEL) {

@@ -160,7 +160,9 @@ function fbError(e) {
 async function fbGoogle() {
   const err = document.getElementById('aErr');
   try {
-    await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' }); // always show the account chooser
+    await firebase.auth().signInWithPopup(provider);
     closeAuth();
   } catch (e) { const m = fbError(e); if (err) err.textContent = m; else toast(m); }
 }

@@ -20,3 +20,8 @@ window.FIREBASE_CONFIG = {
 // Emails treated as admins by the local Node dev server when they sign in via Firebase.
 // (The server reads its own ADMIN_EMAILS; this is documentation of the default.)
 window.ADMIN_EMAILS = ["superadmin@unimatch.cm"];
+
+// Where the API lives. Leave EMPTY when the same server serves both UI and API
+// (local `npm start`, or the Render Node deploy). For a STATIC host like Netlify,
+// set this to your API origin, e.g. "https://unimatch-cameroon.onrender.com".
+window.API_BASE = "";

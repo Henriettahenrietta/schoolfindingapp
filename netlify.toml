@@ -1,0 +1,13 @@
+# Netlify hosts the static web UI from the web/ folder.
+# IMPORTANT: Netlify can't run our live API server. Deploy the API on Render (Node service,
+# see render.yaml), then put that API URL into web/firebase-config.js as window.API_BASE so
+# this static site knows where to send its requests.
+[build]
+  publish = "web"
+  command = ""
+
+# Serve fresh files (PWA shell + service worker).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache"

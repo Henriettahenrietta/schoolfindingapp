@@ -1,5 +1,8 @@
-// Same-origin when served by the combined server / when deployed; cross-port for the 2-server dev setup.
-const API = (location.port === '3000') ? 'http://localhost:8080/api/v1' : '/api/v1';
+// API location: explicit window.API_BASE (e.g. on Netlify) wins; otherwise same-origin
+// (combined server / Render), or :8080 for the 2-server local dev setup.
+const API = (window.API_BASE && window.API_BASE.trim())
+  ? window.API_BASE.replace(/\/$/, '') + '/api/v1'
+  : (location.port === '3000' ? 'http://localhost:8080/api/v1' : '/api/v1');
 
 // ---------- session (dev auth, mirrors the backend X-Debug-* convention) ----------
 const PRESETS = {

@@ -21,7 +21,6 @@ window.FIREBASE_CONFIG = {
 // (The server reads its own ADMIN_EMAILS; this is documentation of the default.)
 window.ADMIN_EMAILS = ["superadmin@unimatch.cm"];
 
-// Where the API lives. Leave EMPTY when the same server serves both UI and API
-// (local `npm start`, or the Render Node deploy). For a STATIC host like Netlify,
-// set this to your API origin, e.g. "https://unimatch-cameroon.onrender.com".
-window.API_BASE = "";
+// Where the API lives. Points at the live Render backend so the app works no matter
+// which host serves the UI (Render itself, Vercel, Netlify, or a phone home-screen app).
+window.API_BASE = "https://unimatch-cameroon.onrender.com";

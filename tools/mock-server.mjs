@@ -345,6 +345,11 @@ function send(res, status, body) {
 
 function readBody(req) {
   return new Promise((resolve) => {
+    // Serverless platforms (Vercel) pre-parse the body and consume the stream.
+    if (req.body !== undefined && req.body !== null) {
+      if (typeof req.body === 'string') { try { return resolve(JSON.parse(req.body)); } catch { return resolve({}); } }
+      return resolve(req.body);
+    }
     let data = '';
     req.on('data', (c) => (data += c));
     req.on('end', () => {
@@ -354,7 +359,7 @@ function readBody(req) {
 }
 
 // ----------------------------- Router -----------------------------
-const server = http.createServer(async (req, res) => {
+export async function handler(req, res) {
   const u = new URL(req.url, `http://localhost:${PORT}`);
   const path = u.pathname;
   const q = u.searchParams;
@@ -692,10 +697,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   return send(res, 404, { message: `No route for ${method} ${path}` });
-});
+}
 
 loadStore();
-server.listen(PORT, () => {
-  console.log(`UniMatch Cameroon running on http://localhost:${PORT}  (API + web app)`);
-  console.log('Open that URL in your browser.');
-});
+// Start a standalone HTTP server only when run directly (locally / on Render / Koyeb).
+// When imported by a serverless function (Vercel), we just export `handler` and don't listen.
+if (!process.env.VERCEL) {
+  http.createServer(handler).listen(PORT, () => {
+    console.log(`UniMatch Cameroon running on http://localhost:${PORT}  (API + web app)`);
+    console.log('Open that URL in your browser.');
+  });
+}

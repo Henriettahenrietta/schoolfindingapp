@@ -59,7 +59,7 @@ class HomeViewModel(private val repo: SchoolRepository) : ViewModel() {
 
     init { refresh() }
 
-    fun setCategory(c: String?) { category = c; refresh() }
+    fun selectCategory(c: String?) { category = c; refresh() }
 
     fun refresh() {
         loading = true
@@ -118,13 +118,13 @@ fun HomeScreen(onOpenSchool: (Long) -> Unit, onCompare: (List<Long>) -> Unit) {
             ) {
                 FilterChip(
                     selected = vm.category == null,
-                    onClick = { vm.setCategory(null) },
+                    onClick = { vm.selectCategory(null) },
                     label = { Text("All") },
                 )
                 cats.forEach { c ->
                     FilterChip(
                         selected = vm.category == c,
-                        onClick = { vm.setCategory(if (vm.category == c) null else c) },
+                        onClick = { vm.selectCategory(if (vm.category == c) null else c) },
                         label = { Text(categoryLabel(c)) },
                     )
                 }

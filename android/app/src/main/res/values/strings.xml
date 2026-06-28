@@ -1,3 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">UniMatch Cameroon</string>
+    <string name="tagline">Find Your Future University</string>
+    <string name="nav_discover">Discover</string>
+    <string name="nav_favourites">Favourites</string>
+    <string name="nav_profile">Profile</string>
 </resources>

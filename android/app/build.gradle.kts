@@ -15,10 +15,11 @@ android {
         versionName = "1.0"
 
         // Backend base URL baked into the APK.
-        // Render deployment (render.yaml service "schoolfinder-api"). If Render assigns a
-        // different hostname, update this and push to rebuild. For the emulator use
-        // "http://10.0.2.2:8080/"; for same-WiFi testing use "http://<your-pc-ip>:8080/".
-        buildConfigField("String", "API_BASE_URL", "\"https://schoolfinder-api.onrender.com/\"")
+        // Points at the LIVE deployment (the Node server on Render that serves /api/v1 and
+        // the web UI). This is the same backend the web app uses, so the Android app loads
+        // the same live data. For a backend running on your own PC use the emulator alias
+        // "http://10.0.2.2:8080/", or "http://<your-pc-ip>:8080/" for a physical device on the same WiFi.
+        buildConfigField("String", "API_BASE_URL", "\"https://unimatch-cameroon.onrender.com/\"")
     }
 
     buildTypes {

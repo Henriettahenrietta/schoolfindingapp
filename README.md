@@ -7,7 +7,7 @@ evaluate, and navigate to schools and universities. Built from the project SRS
 > Note: the display/brand name is **UniMatch Cameroon**; the internal code package/namespace
 > remains `com.schoolfinder` to avoid a disruptive rename.
 
-This is a **monorepo**:
+This is a **monorepo  **:
 
 | Folder      | What it is                                            | Stack                              |
 | ----------- | ----------------------------------------------------- | ---------------------------------- |
